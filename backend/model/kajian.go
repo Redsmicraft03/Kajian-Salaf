@@ -29,9 +29,12 @@ type KajianReq struct {
 	Judul      string    `json:"judul"`
 	Ustadz     string    `json:"ustadz"`
 	WaktuMulai time.Time `json:"waktu_mulai"`
+	Kota       string    `json:"kota"`
+	Provinsi   string    `json:"provinsi"`
 	Tempat     string    `json:"tempat"`
 	MapUrl     string    `json:"map_url"`
 	PosterURL  string    `json:"poster_url"`
 	LiveURL    string    `json:"live_url"`
 	Untuk      string    `json:"untuk"`
+	Status     string    `json:"status"`
 }

@@ -1,0 +1,92 @@
+# ==========================================================
+# .gitignore — Jadwal Kajian Salaf (Backend Go + Frontend)
+# ==========================================================
+
+# -----------------------------
+# Environment & Sensitive Files (PENTING: Rahasia DB & JWT)
+# -----------------------------
+.env
+.env.*
+!.env.example
+*.env
+*.pem
+*.key
+*.cert
+
+# -----------------------------
+# Go Binaries & Build Output
+# -----------------------------
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.out
+*.test
+kajian-salaf
+backend-kajian-salaf
+backend/*.exe
+backend/*.out
+bin/
+dist/
+build/
+
+# Go Architecture & Package Objects
+*.a
+*.o
+vendor/
+
+# -----------------------------
+# Node / Frontend Artifacts
+# -----------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.vercel/
+
+# -----------------------------
+# Logs, Temp & Cache
+# -----------------------------
+*.log
+*.tmp
+*.temp
+tmp/
+temp/
+.cache/
+
+# -----------------------------
+# Database Local Files
+# -----------------------------
+*.sqlite
+*.sqlite3
+*.db
+
+# -----------------------------
+# IDE & Code Editor Configurations
+# -----------------------------
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+*~
+
+# -----------------------------
+# Operating System Files
+# -----------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini

@@ -15,9 +15,24 @@ import (
 func CreateKajian(c fiber.Ctx) error {
 	var kajianReq model.KajianReq
 	if err := c.Bind().Body(&kajianReq); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(model.APIResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(model.APIResponse{
 			Success: false,
 			Message: "format json salah",
+		})
+	}
+
+	kajianReq.Judul = strings.TrimSpace(kajianReq.Judul)
+	if kajianReq.Judul == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(model.APIResponse{
+			Success: false,
+			Message: "judul kajian wajib diisi",
+		})
+	}
+
+	if kajianReq.WaktuMulai.IsZero() {
+		return c.Status(fiber.StatusBadRequest).JSON(model.APIResponse{
+			Success: false,
+			Message: "waktu mulai wajib diisi",
 		})
 	}
 
@@ -49,6 +64,9 @@ func CreateKajian(c fiber.Ctx) error {
 	kajian.Judul = kajianReq.Judul
 	kajian.Ustadz = kajianReq.Ustadz
 	kajian.WaktuMulai = kajianReq.WaktuMulai
+	kajian.Kota = kajianReq.Kota
+	kajian.Provinsi = kajianReq.Provinsi
+	kajian.Status = kajianReq.Status
 	kajian.Tempat = kajianReq.Tempat
 	kajian.MapUrl = kajianReq.MapUrl
 	kajian.PosterURL = kajianReq.PosterURL
@@ -84,7 +102,7 @@ func GetKajian(c fiber.Ctx) error {
 	query := database.DB.Model(&model.Kajian{})
 
 	if kota != "" {
-		query 	= query.Where("LOWER(kota) = ?", strings.ToLower(kota))
+		query = query.Where("LOWER(kota) = ?", strings.ToLower(kota))
 	}
 
 	now := time.Now()
@@ -127,6 +145,108 @@ func GetKajian(c fiber.Ctx) error {
 	})
 }
 
+func GetKajianByID(c fiber.Ctx) error {
+	id := c.Params("id")
+
+	var kajian model.Kajian
+	if err := database.DB.First(&kajian, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(model.APIResponse{
+				Success: false,
+				Message: "data kajian tidak ditemukan",
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(model.APIResponse{
+			Success: false,
+			Message: "gagal mengambil data di database: " + err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.APIResponse{
+		Success: true,
+		Message: "data berhasil diambil",
+		Data:    kajian,
+	})
+}
+
 func UpdateKajian(c fiber.Ctx) error {
-	
+	id := c.Params("id")
+
+	// 1. Cari dulu datanya — kalau nggak ada, 404
+	var kajian model.Kajian
+	if err := database.DB.First(&kajian, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(model.APIResponse{
+				Success: false,
+				Message: "data kajian tidak ditemukan",
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(model.APIResponse{
+			Success: false,
+			Message: "gagal mengambil data di database: " + err.Error(),
+		})
+	}
+
+	// 2. Bind JSON baru
+	var req model.KajianReq
+	if err := c.Bind().Body(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.APIResponse{
+			Success: false,
+			Message: "format json salah",
+		})
+	}
+
+	// 3. Timpa field-nya
+	kajian.Judul = req.Judul
+	kajian.Ustadz = req.Ustadz
+	kajian.WaktuMulai = req.WaktuMulai
+	kajian.Tempat = req.Tempat
+	kajian.MapUrl = req.MapUrl
+	kajian.PosterURL = req.PosterURL
+	kajian.LiveURL = req.LiveURL
+	kajian.Untuk = req.Untuk
+
+	// 4. Simpan
+	if err := database.DB.Save(&kajian).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(model.APIResponse{
+			Success: false,
+			Message: "gagal memperbarui data di database: " + err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.APIResponse{
+		Success: true,
+		Message: "data berhasil diperbarui",
+		Data:    kajian,
+	})
+}
+
+func DeleteKajian(c fiber.Ctx) error {
+	id := c.Params("id")
+
+	var kajian model.Kajian
+	if err := database.DB.First(&kajian, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(model.APIResponse{
+				Success: false,
+				Message: "data kajian tidak ditemukan",
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(model.APIResponse{
+			Success: false,
+			Message: "gagal mengambil data di database: " + err.Error(),
+		})
+	}
+
+	if err := database.DB.Delete(&kajian).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(model.APIResponse{
+			Success: false,
+			Message: "gagal menghapus data di database: " + err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.APIResponse{
+		Success: true,
+		Message: "data berhasil dihapus",
+	})
 }

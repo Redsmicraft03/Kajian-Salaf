@@ -6,6 +6,7 @@ kajian-salaf
 # Environment (WAJIB - isinya password DB & JWT secret)
 .env
 .env.*
+!.env.example
 
 # IDE
 .vscode/

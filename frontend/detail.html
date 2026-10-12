@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Kajian — Jadwal Kajian Salaf</title>
+  <meta name="description" content="Informasi detail jadwal kajian sunnah, pemateri, waktu, lokasi, dan link live streaming.">
+  <base href="/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Top Navigation -->
+<header class="site-nav">
+  <div class="container nav-inner">
+    <a href="/" class="nav-brand">
+      <div class="brand-icon">
+        <i class="fa-solid fa-mosque"></i>
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">Kajian Salaf</span>
+        <span class="brand-sub">Jadwal Sunnah</span>
+      </div>
+    </a>
+    
+    <div class="nav-actions">
+      <button class="theme-toggle" id="theme-toggle" title="Ganti mode tema" aria-label="Ganti mode tema">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <a class="back-nav" href="/">
+    <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar Jadwal
+  </a>
+
+  <div id="detail"></div>
+
+  <div id="error" class="empty-state hidden" style="border-color:#fca5a5;">
+    <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444"></i>
+    <h3 style="color:#dc2626">Kajian Tidak Ditemukan</h3>
+    <p>Data jadwal kajian tidak ditemukan atau server backend belum berjalan.</p>
+    <a href="index.html" class="btn btn-ghost" style="margin-top:16px;">
+      <i class="fa-solid fa-house"></i> Kembali ke Beranda
+    </a>
+  </div>
+</main>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast toast-success">
+  <i class="fa-solid fa-circle-check"></i>
+  <span id="toast-text">Tautan kajian berhasil disalin!</span>
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-quote">
+      <i class="fa-solid fa-mosque"></i>
+      <span>Jadwal Kajian Salaf — Menuntut ilmu syar'i, mendekatkan diri kepada Allah.</span>
+    </div>
+    <div class="footer-nav">
+      <a href="/"><i class="fa-solid fa-house"></i> Beranda</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/config.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/detail.js"></script>
+</body>
+</html>

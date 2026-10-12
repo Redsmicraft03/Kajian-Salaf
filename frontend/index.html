@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jadwal Kajian — Kumpulan Kajian Sunnah di Kotamu</title>
+  <meta name="description" content="Kumpulan jadwal kajian Islam ilmiah dan sunnah di berbagai kota. Cari jadwal kajian terdekat di kotamu.">
+  <base href="/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Top Navigation -->
+<header class="site-nav">
+  <div class="container nav-inner">
+    <a href="/" class="nav-brand">
+      <div class="brand-icon">
+        <i class="fa-solid fa-mosque"></i>
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">Kajian Salaf</span>
+        <span class="brand-sub">Jadwal Sunnah</span>
+      </div>
+    </a>
+    
+    <div class="nav-actions">
+      <button class="theme-toggle" id="theme-toggle" title="Ganti mode tema" aria-label="Ganti mode tema">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="bismillah-container">
+      <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+    </div>
+    <h1>Jangan Lewatkan <span class="gold">Kajian Sunnah</span> Pekan Ini</h1>
+    <p>Kumpulan jadwal kajian ilmiah dari asatidzah ahlus sunnah wal jama'ah — terorganisir dan mudah diakses di kotamu.</p>
+    <div class="hero-actions">
+      <a href="#jadwal" class="btn btn-gold">
+        <i class="fa-solid fa-calendar-days"></i> Lihat Jadwal
+      </a>
+      <button class="hero-city" id="hero-kota">
+        <i class="fa-solid fa-location-dot"></i> <span id="hero-kota-nama">Pilih kota</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Main Content -->
+<main class="container">
+
+  <!-- Featured / Nearest Event -->
+  <section id="featured" class="featured hidden">
+    <div class="featured-card">
+      <div class="featured-info">
+        <div class="featured-badge">
+          <span class="pulse"></span>
+          <i class="fa-solid fa-star"></i> Kajian Terdekat
+        </div>
+        <h2 id="f-judul"></h2>
+        <p class="meta" id="f-meta"></p>
+      </div>
+      <div class="countdown" id="countdown">
+        <div class="count-box"><div class="num" id="cd-d">0</div><div class="lbl">Hari</div></div>
+        <div class="count-box"><div class="num" id="cd-h">0</div><div class="lbl">Jam</div></div>
+        <div class="count-box"><div class="num" id="cd-m">0</div><div class="lbl">Menit</div></div>
+        <div class="count-box"><div class="num" id="cd-s">0</div><div class="lbl">Detik</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Schedule List Section -->
+  <section id="jadwal" style="padding-top: 12px">
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">
+          <i class="fa-solid fa-calendar-days"></i> Jadwal Kajian
+        </h2>
+        <p class="section-sub" id="jadwal-sub">Menampilkan kajian pekan ini.</p>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <button class="chip active" data-waktu="pekan_ini">
+          <i class="fa-regular fa-calendar-check"></i> Pekan Ini
+        </button>
+        <button class="chip" data-waktu="mendatang">
+          <i class="fa-regular fa-clock"></i> Akan Datang
+        </button>
+        <button class="chip" data-waktu="lewat">
+          <i class="fa-solid fa-clock-rotate-left"></i> Sudah Lewat
+        </button>
+        <button class="chip" data-waktu="semua">
+          <i class="fa-solid fa-layer-group"></i> Semua
+        </button>
+      </div>
+      <button class="kota-pill" id="btn-ganti-kota" title="Ganti filter kota">
+        <i class="fa-solid fa-location-dot"></i> <span id="kota-nama">Semua kota</span>
+        <i class="fa-solid fa-pen" style="font-size:0.75rem; margin-left:2px"></i>
+      </button>
+    </div>
+
+    <!-- Grid List -->
+    <div id="list" class="grid"></div>
+
+    <!-- Empty State -->
+    <div id="empty" class="empty-state hidden">
+      <i class="fa-solid fa-calendar-xmark"></i>
+      <h3>Belum Ada Jadwal Kajian</h3>
+      <p>Tidak ada jadwal kajian untuk kriteria filter ini. Silakan ganti kota atau pilih rentang waktu lain.</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error" class="empty-state hidden" style="border-color:#fca5a5;">
+      <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444"></i>
+      <h3 style="color:#dc2626">Gagal Memuat Data</h3>
+      <p>Terjadi kendala saat menghubungkan ke server. Pastikan layanan backend berjalan.</p>
+    </div>
+
+    <!-- Pagination Controls -->
+    <nav class="pagination">
+      <button id="prev" class="btn btn-ghost">
+        <i class="fa-solid fa-chevron-left"></i> Sebelumnya
+      </button>
+      <span id="page-info" class="page-indicator"></span>
+      <button id="next" class="btn btn-ghost">
+        Berikutnya <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </nav>
+  </section>
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-quote">
+      <i class="fa-solid fa-mosque"></i>
+      <span>Jadwal Kajian Salaf — Menuntut ilmu syar'i, mendekatkan diri kepada Allah.</span>
+    </div>
+    <div class="footer-nav">
+      <a href="/"><i class="fa-solid fa-house"></i> Beranda</a>
+    </div>
+  </div>
+</footer>
+
+<!-- Modal Pilih Kota -->
+<div id="modal-kota" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-location-dot"></i> Pilih Kota</h2>
+      <button class="modal-close" id="modal-kota-tutup" aria-label="Tutup modal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <p>Pilih atau ketik kotamu untuk melihat kajian yang terdekat secara otomatis.</p>
+    
+    <div class="input-group">
+      <i class="fa-solid fa-magnifying-glass input-icon"></i>
+      <input type="text" id="modal-kota-input" placeholder="Ketik nama kota, cth: Jakarta">
+    </div>
+
+    <div class="quick-cities">
+      <div class="quick-cities-title">Kota Populer:</div>
+      <div class="city-chips-wrap">
+        <button type="button" class="city-chip" data-city="Jakarta">Jakarta</button>
+        <button type="button" class="city-chip" data-city="Bekasi">Bekasi</button>
+        <button type="button" class="city-chip" data-city="Bogor">Bogor</button>
+        <button type="button" class="city-chip" data-city="Depok">Depok</button>
+        <button type="button" class="city-chip" data-city="Tangerang">Tangerang</button>
+        <button type="button" class="city-chip" data-city="Bandung">Bandung</button>
+        <button type="button" class="city-chip" data-city="Surabaya">Surabaya</button>
+        <button type="button" class="city-chip" data-city="Yogyakarta">Yogyakarta</button>
+        <button type="button" class="city-chip" data-city="Solo">Solo</button>
+        <button type="button" class="city-chip" data-city="Semarang">Semarang</button>
+        <button type="button" class="city-chip" data-city="Malang">Malang</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button id="modal-kota-reset" class="btn btn-ghost btn-sm" type="button">
+        <i class="fa-solid fa-globe"></i> Semua Kota
+      </button>
+      <button id="modal-kota-simpan" class="btn btn-sm" type="button">
+        <i class="fa-solid fa-check"></i> Terapkan
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/index.js"></script>
+</body>
+</html>

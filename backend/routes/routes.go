@@ -2,20 +2,29 @@ package routes
 
 import (
 	"backend-kajian-salaf/handler"
+	"backend-kajian-salaf/middleware"
 
 	"github.com/gofiber/fiber/v3"
 )
 
-func InitRoutes(app *fiber.App) {
-	api := app.Group("/api")
+func registerRoutes(router fiber.Router) {
+	router.Post("/login", handler.LoginHandler)
+	router.Post("/register", handler.RegisterHandler)
 
-	v1 := api.Group("/v1")
-	v1.Post("/login", handler.LoginHandler)
-	v1.Post("/register", handler.RegisterHandler)
-
-	admin :=  v1.Group("/admin")
+	admin := router.Group("/admin", middleware.Protected(), middleware.AdminOnly())
 	admin.Post("/tambah-kajian", handler.CreateKajian)
 	admin.Get("/kajian", handler.GetKajian)
+	admin.Put("/kajian/:id", handler.UpdateKajian)
+	admin.Delete("/kajian/:id", handler.DeleteKajian)
 
-	v1.Get("/kajian", handler.GetKajian)
+	router.Get("/kajian", handler.GetKajian)
+	router.Get("/kajian/:id", handler.GetKajianByID)
+}
+
+func InitRoutes(app *fiber.App) {
+	// Route utama: langsung /v1/... (misal: http://localhost:8080/v1/login)
+	registerRoutes(app.Group("/v1"))
+
+	// Alias /api/v1/... agar tetap kompatibel
+	registerRoutes(app.Group("/api/v1"))
 }

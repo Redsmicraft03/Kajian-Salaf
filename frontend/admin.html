@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Jadwal Kajian Salaf</title>
+  <meta name="description" content="Panel manajemen dan administrasi jadwal kajian salaf.">
+  <base href="/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Top Navigation -->
+<header class="site-nav">
+  <div class="container nav-inner">
+    <a href="/" class="nav-brand">
+      <div class="brand-icon">
+        <i class="fa-solid fa-mosque"></i>
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">Kajian Salaf</span>
+        <span class="brand-sub">Panel Admin</span>
+      </div>
+    </a>
+    
+    <div class="nav-actions">
+      <button class="theme-toggle" id="theme-toggle" title="Ganti mode tema" aria-label="Ganti mode tema">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+      <a href="/" class="btn btn-ghost btn-sm" title="Kembali ke halaman publik">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat Situs
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- Login Section -->
+<main class="container narrow" id="login-section">
+  <div class="admin-card login-card">
+    <div class="login-header">
+      <div class="login-icon">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h2>Login Administrator</h2>
+      <p style="color:var(--text-muted);font-size:0.9rem;margin-top:6px;">Masuk untuk mengelola jadwal kajian.</p>
+    </div>
+
+    <div class="input-group">
+      <i class="fa-solid fa-envelope input-icon"></i>
+      <input type="email" id="email" placeholder="Email Administrator" autocomplete="username">
+    </div>
+
+    <div class="input-group">
+      <i class="fa-solid fa-lock input-icon"></i>
+      <input type="password" id="password" placeholder="Kata Sandi" autocomplete="current-password">
+    </div>
+
+    <button id="btn-login" class="btn" style="width:100%;margin-top:4px;">
+      <i class="fa-solid fa-arrow-right-to-bracket"></i> Masuk ke Dashboard
+    </button>
+
+    <div id="login-err" class="error-banner hidden">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span id="login-err-text"></span>
+    </div>
+  </div>
+</main>
+
+<!-- Dashboard Section -->
+<div id="app-section" class="hidden">
+  
+  <!-- Admin Hero Section -->
+  <section class="admin-hero">
+    <div class="container admin-hero-inner">
+      <div class="admin-title-box">
+        <h1>Dashboard <span class="gold">Administrator</span></h1>
+        <div class="admin-user-pill">
+          <i class="fa-solid fa-user-shield"></i>
+          <span>Terhubung sebagai <strong id="admin-name" style="color:#ffd875">Admin</strong></span>
+        </div>
+      </div>
+      <div class="admin-hero-actions">
+        <button id="btn-tambah" class="btn btn-gold">
+          <i class="fa-solid fa-plus"></i> Tambah Kajian Baru
+        </button>
+        <button id="btn-logout" class="btn btn-ghost btn-sm" style="color:#ffffff;border-color:rgba(255,255,255,0.35);background:rgba(255,255,255,0.08)">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Container -->
+  <main class="container">
+    
+    <!-- 5 Clickable Metric/Stat Cards -->
+    <div class="stat-grid">
+      <div class="stat-card active" data-filter="semua" title="Klik untuk menampilkan semua kajian">
+        <div class="stat-icon total">
+          <i class="fa-solid fa-layer-group"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-num" id="stat-total">0</span>
+          <span class="stat-label">Total Kajian</span>
+        </div>
+      </div>
+
+      <div class="stat-card" data-filter="baru" title="Klik untuk melihat kajian yang baru ditambahkan">
+        <div class="stat-icon baru">
+          <i class="fa-solid fa-circle-plus"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-num" id="stat-baru">0</span>
+          <span class="stat-label">Baru Ditambahkan</span>
+        </div>
+      </div>
+
+      <div class="stat-card" data-filter="pekan_ini" title="Klik untuk menyaring kajian pekan ini">
+        <div class="stat-icon pekan">
+          <i class="fa-regular fa-calendar-check"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-num" id="stat-pekan">0</span>
+          <span class="stat-label">Pekan Ini</span>
+        </div>
+      </div>
+
+      <div class="stat-card" data-filter="mendatang" title="Klik untuk menyaring kajian yang akan datang">
+        <div class="stat-icon mendatang">
+          <i class="fa-regular fa-clock"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-num" id="stat-mendatang">0</span>
+          <span class="stat-label">Akan Datang</span>
+        </div>
+      </div>
+
+      <div class="stat-card" data-filter="lewat" title="Klik untuk menyaring kajian yang sudah lewat">
+        <div class="stat-icon lewat">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-num" id="stat-lewat">0</span>
+          <span class="stat-label">Sudah Lewat</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="admin-toolbar">
+      <div class="admin-search-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="admin-search" placeholder="Cari judul materi, nama ustadz, masjid, atau kota...">
+      </div>
+
+      <div class="admin-filter-chips">
+        <button class="chip active" data-waktu="semua">
+          <i class="fa-solid fa-layer-group"></i> Semua (<span id="chip-total">0</span>)
+        </button>
+        <button class="chip" data-waktu="baru">
+          <i class="fa-solid fa-circle-plus"></i> Baru Ditambahkan (<span id="chip-baru">0</span>)
+        </button>
+        <button class="chip" data-waktu="pekan_ini">
+          <i class="fa-regular fa-calendar-check"></i> Pekan Ini (<span id="chip-pekan">0</span>)
+        </button>
+        <button class="chip" data-waktu="mendatang">
+          <i class="fa-regular fa-clock"></i> Akan Datang (<span id="chip-mendatang">0</span>)
+        </button>
+        <button class="chip" data-waktu="lewat">
+          <i class="fa-solid fa-clock-rotate-left"></i> Sudah Lewat (<span id="chip-lewat">0</span>)
+        </button>
+      </div>
+    </div>
+
+    <!-- Cards Grid Display (Mirip Halaman Utama) -->
+    <div id="admin-grid" class="grid"></div>
+
+    <!-- Empty State -->
+    <div id="admin-empty" class="empty-state hidden">
+      <i class="fa-solid fa-calendar-xmark"></i>
+      <h3>Tidak Ada Data Kajian</h3>
+      <p id="admin-empty-text">Belum ada data kajian untuk kriteria filter ini.</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="admin-error" class="empty-state hidden" style="border-color:#fca5a5;">
+      <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444"></i>
+      <h3 style="color:#dc2626">Gagal Memuat Data</h3>
+      <p id="admin-error-text">Terjadi kesalahan jaringan atau sesi login telah berakhir.</p>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal Form Tambah / Edit Kajian -->
+<div id="modal-form" class="form-modal hidden" role="dialog" aria-modal="true">
+  <div class="form-modal-card">
+    <div class="form-modal-header">
+      <h2 id="form-modal-title">
+        <i class="fa-solid fa-pen-to-square"></i> Tambah Kajian Baru
+      </h2>
+      <button class="modal-close" id="btn-close-modal" aria-label="Tutup form">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form id="form-kajian">
+      <input type="hidden" id="f-id">
+      
+      <div class="form-grid">
+        <label class="full">
+          <span>Judul Kajian *</span>
+          <input type="text" id="f-judul" placeholder="cth: Kitab Tauhid — Mengikhlaskan Ibadah Kepada Allah" required>
+        </label>
+
+        <label class="full">
+          <span>Nama Ustadz / Pemateri</span>
+          <input type="text" id="f-ustadz" placeholder="cth: Ustadz Dr. Firanda Andirja, M.A.">
+        </label>
+
+        <!-- Bagian Pemilihan Tanggal & Waktu Rapi -->
+        <div class="full datetime-section">
+          <div class="datetime-header">
+            <div class="datetime-title">
+              <i class="fa-solid fa-calendar-days"></i>
+              <span>Jadwal & Waktu Pelaksanaan</span>
+            </div>
+            <span class="datetime-badge-tag">
+              <i class="fa-solid fa-clock"></i> Waktu Indonesia Barat (WIB)
+            </span>
+          </div>
+
+          <!-- Pilihan Tanggal Cepat -->
+          <div class="preset-group">
+            <span class="preset-label">
+              <i class="fa-regular fa-calendar-check"></i> Pilihan Tanggal Cepat:
+            </span>
+            <div class="date-preset-chips">
+              <button type="button" class="preset-chip date-chip" data-date="hari_ini">
+                <i class="fa-solid fa-sun"></i> Hari Ini
+              </button>
+              <button type="button" class="preset-chip date-chip" data-date="besok">
+                <i class="fa-solid fa-arrow-right"></i> Besok
+              </button>
+              <button type="button" class="preset-chip date-chip" data-date="sabtu">
+                <i class="fa-solid fa-calendar-week"></i> Sabtu Ini
+              </button>
+              <button type="button" class="preset-chip date-chip" data-date="ahad">
+                <i class="fa-solid fa-calendar-week"></i> Ahad Ini
+              </button>
+              <button type="button" class="preset-chip date-chip" data-date="sabtu_depan">
+                <i class="fa-solid fa-calendar-plus"></i> Sabtu Depan
+              </button>
+            </div>
+          </div>
+
+          <!-- Input Tanggal & Jam Grid -->
+          <div class="datetime-grid">
+            <div class="dt-field">
+              <label for="f-tanggal" class="dt-label">
+                <i class="fa-regular fa-calendar"></i> Tanggal Kajian *
+              </label>
+              <input type="date" id="f-tanggal" required>
+            </div>
+
+            <div class="dt-field">
+              <label for="f-jam" class="dt-label">
+                <i class="fa-regular fa-clock"></i> Jam Mulai (WIB) *
+              </label>
+              <input type="time" id="f-jam" required>
+            </div>
+          </div>
+
+          <!-- Pilihan Jam Cepat (Waktu Shalat) -->
+          <div class="preset-group">
+            <span class="preset-label">
+              <i class="fa-solid fa-mosque"></i> Pilihan Jam Kajian Cepat (Waktu Shalat):
+            </span>
+            <div class="time-preset-chips">
+              <button type="button" class="preset-chip time-chip" data-time="05:30">
+                <i class="fa-regular fa-sun"></i> Ba'da Subuh (05:30)
+              </button>
+              <button type="button" class="preset-chip time-chip" data-time="12:30">
+                <i class="fa-solid fa-sun"></i> Ba'da Zhuhur (12:30)
+              </button>
+              <button type="button" class="preset-chip time-chip" data-time="16:00">
+                <i class="fa-regular fa-clock"></i> Ba'da Ashar (16:00)
+              </button>
+              <button type="button" class="preset-chip time-chip" data-time="18:30">
+                <i class="fa-solid fa-moon"></i> Ba'da Maghrib (18:30)
+              </button>
+              <button type="button" class="preset-chip time-chip" data-time="19:45">
+                <i class="fa-solid fa-star-and-crescent"></i> Ba'da Isya (19:45)
+              </button>
+            </div>
+          </div>
+
+          <!-- Preview Waktu Rapi & Jelas -->
+          <div id="datetime-preview" class="datetime-preview-card hidden">
+            <div class="preview-badge-icon">
+              <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <div class="preview-content">
+              <div class="preview-heading">Jadwal Kajian Terpilih:</div>
+              <div id="datetime-preview-text" class="preview-main-text"></div>
+              <div class="preview-sub-text">
+                <span class="preview-pill" id="datetime-preview-relative"></span>
+                <span class="preview-pill hidden" id="datetime-preview-sholat"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <label>
+          <span>Kota</span>
+          <input type="text" id="f-kota" placeholder="cth: Jakarta / Bekasi / Surabaya">
+        </label>
+
+        <label>
+          <span>Provinsi</span>
+          <input type="text" id="f-provinsi" placeholder="cth: Jawa Barat / DKI Jakarta">
+        </label>
+
+        <label class="full">
+          <span>Nama Tempat / Masjid</span>
+          <input type="text" id="f-tempat" placeholder="cth: Masjid Al-Ikhlas, Kemang Pratama">
+        </label>
+
+        <label class="full">
+          <span>Link Google Maps</span>
+          <input type="url" id="f-map" placeholder="https://maps.google.com/?q=...">
+        </label>
+
+        <label class="full">
+          <span>Link Gambar Poster (Direct Image: .jpg / .png / Postimages)</span>
+          <input type="url" id="f-poster" placeholder="https://i.postimg.cc/... / https://...">
+        </label>
+
+        <label class="full">
+          <span>Link Live Streaming (Opsional)</span>
+          <input type="url" id="f-live" placeholder="https://youtube.com/live/...">
+        </label>
+
+        <label>
+          <span>Sasaran Jamaah</span>
+          <select id="f-untuk">
+            <option value="umum">Umum (Ikhwan & Akhwat)</option>
+            <option value="ikhwan">Khusus Ikhwan</option>
+            <option value="akhwat">Khusus Akhwat</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Status Jadwal</span>
+          <select id="f-status">
+            <option value="upcoming">Akan Datang (Upcoming)</option>
+            <option value="selesai">Selesai</option>
+            <option value="batal">Dibatalkan</option>
+          </select>
+        </label>
+
+        <div id="form-err" class="error-banner hidden full">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span id="form-err-text"></span>
+        </div>
+
+        <div class="form-grid-actions">
+          <button type="button" id="btn-batal-modal" class="btn btn-ghost">
+            <i class="fa-solid fa-xmark"></i> Batal
+          </button>
+          <button type="submit" class="btn btn-gold">
+            <i class="fa-solid fa-floppy-disk"></i> Simpan Data
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus -->
+<div id="modal-hapus" class="form-modal hidden" role="dialog" aria-modal="true">
+  <div class="form-modal-card" style="max-width: 440px; text-align: center; padding: 32px 24px;">
+    <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(220, 38, 38, 0.12); color: #dc2626; display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 16px;">
+      <i class="fa-solid fa-trash-can"></i>
+    </div>
+    
+    <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 8px;">Hapus Jadwal Kajian?</h2>
+    
+    <p id="hapus-judul-teks" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 24px; line-height: 1.5;">
+      Apakah Anda yakin ingin menghapus kajian ini? Tindakan ini tidak dapat dibatalkan.
+    </p>
+
+    <div style="display: flex; gap: 12px; justify-content: center;">
+      <button type="button" id="btn-batal-hapus" class="btn btn-ghost" style="flex: 1;">
+        <i class="fa-solid fa-xmark"></i> Batal
+      </button>
+      <button type="button" id="btn-konfirmasi-hapus" class="btn btn-danger" style="flex: 1;">
+        <i class="fa-solid fa-trash-can"></i> Ya, Hapus
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast toast-success">
+  <i class="fa-solid fa-circle-check"></i>
+  <span id="toast-text">Data berhasil disimpan!</span>
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-quote">
+      <i class="fa-solid fa-mosque"></i>
+      <span>Jadwal Kajian Salaf — Menuntut ilmu syar'i, mendekatkan diri kepada Allah.</span>
+    </div>
+    <div class="footer-nav">
+      <a href="/"><i class="fa-solid fa-house"></i> Beranda</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/config.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
