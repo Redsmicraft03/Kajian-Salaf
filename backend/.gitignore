@@ -1,0 +1,19 @@
+# Hasil build
+*.exe
+*.out
+kajian-salaf
+
+# Environment (WAJIB - isinya password DB & JWT secret)
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Log
+*.log
