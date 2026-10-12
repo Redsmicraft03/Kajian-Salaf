@@ -27,12 +27,11 @@ func LoginHandler(c fiber.Ctx) error {
 	var user model.User
 	if err := database.DB.Where("LOWER(email) = ?", req.Email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return c.Status(fiber.StatusNotFound).JSON(model.APIResponse{
+			return c.Status(fiber.StatusUnauthorized).JSON(model.APIResponse{
 				Success: false,
-				Message: "akun belum dibuat",
+				Message: "email atau password yang anda masukkan salah",
 			})
 		}
-
 		return c.Status(fiber.StatusInternalServerError).JSON(model.APIResponse{
 			Success: false,
 			Message: "gagal mengambil data di database",

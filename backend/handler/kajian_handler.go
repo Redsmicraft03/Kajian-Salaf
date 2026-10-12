@@ -200,11 +200,14 @@ func UpdateKajian(c fiber.Ctx) error {
 	kajian.Judul = req.Judul
 	kajian.Ustadz = req.Ustadz
 	kajian.WaktuMulai = req.WaktuMulai
+	kajian.Kota = req.Kota
+	kajian.Provinsi = req.Provinsi
 	kajian.Tempat = req.Tempat
 	kajian.MapUrl = req.MapUrl
 	kajian.PosterURL = req.PosterURL
 	kajian.LiveURL = req.LiveURL
 	kajian.Untuk = req.Untuk
+	kajian.Status = req.Status
 
 	// 4. Simpan
 	if err := database.DB.Save(&kajian).Error; err != nil {
