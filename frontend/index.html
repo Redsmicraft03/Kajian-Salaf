@@ -153,42 +153,69 @@
   </div>
 </footer>
 
-<!-- Modal Pilih Kota -->
+<!-- Modal Pilih Wilayah & Kota -->
 <div id="modal-kota" class="modal hidden" role="dialog" aria-modal="true">
-  <div class="modal-card">
+  <div class="modal-card modal-lokasi-card">
     <div class="modal-header">
-      <h2><i class="fa-solid fa-location-dot"></i> Pilih Kota</h2>
+      <h2><i class="fa-solid fa-location-dot"></i> Pilih Wilayah & Kota</h2>
       <button class="modal-close" id="modal-kota-tutup" aria-label="Tutup modal">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-    <p>Pilih atau ketik kotamu untuk melihat kajian yang terdekat secara otomatis.</p>
-    
-    <div class="input-group">
-      <i class="fa-solid fa-magnifying-glass input-icon"></i>
-      <input type="text" id="modal-kota-input" placeholder="Ketik nama kota, cth: Jakarta">
+    <p class="modal-lokasi-desc">Pilih provinsi atau kota yang memiliki kajian tersedia untuk menyaring jadwal.</p>
+
+    <!-- Bar Status Wilayah Aktif -->
+    <div class="lokasi-current-bar" id="lokasi-current-bar">
+      <div class="lokasi-current-info">
+        <span class="lokasi-current-label"><i class="fa-solid fa-filter"></i> Filter Aktif:</span>
+        <span class="lokasi-current-value" id="lokasi-current-value">Semua Wilayah</span>
+      </div>
+      <button type="button" class="lokasi-clear-link hidden" id="lokasi-clear-selection" title="Reset filter">
+        <i class="fa-solid fa-rotate-left"></i> Reset
+      </button>
     </div>
 
-    <div class="quick-cities">
-      <div class="quick-cities-title">Kota Populer:</div>
-      <div class="city-chips-wrap">
-        <button type="button" class="city-chip" data-city="Jakarta">Jakarta</button>
-        <button type="button" class="city-chip" data-city="Bekasi">Bekasi</button>
-        <button type="button" class="city-chip" data-city="Bogor">Bogor</button>
-        <button type="button" class="city-chip" data-city="Depok">Depok</button>
-        <button type="button" class="city-chip" data-city="Tangerang">Tangerang</button>
-        <button type="button" class="city-chip" data-city="Bandung">Bandung</button>
-        <button type="button" class="city-chip" data-city="Surabaya">Surabaya</button>
-        <button type="button" class="city-chip" data-city="Yogyakarta">Yogyakarta</button>
-        <button type="button" class="city-chip" data-city="Solo">Solo</button>
-        <button type="button" class="city-chip" data-city="Semarang">Semarang</button>
-        <button type="button" class="city-chip" data-city="Malang">Malang</button>
+    <div class="lokasi-modal-body">
+      <!-- Section 1: Pilihan Provinsi -->
+      <div class="lokasi-section">
+        <div class="lokasi-section-head">
+          <div class="lokasi-section-title">
+            <i class="fa-solid fa-map"></i> Pilih Provinsi
+          </div>
+          <span class="lokasi-section-badge" id="provinsi-count-badge">0 Provinsi</span>
+        </div>
+        <div class="lokasi-chips-wrap" id="provinsi-chips-wrap">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Section 2: Pilihan Kota -->
+      <div class="lokasi-section">
+        <div class="lokasi-section-head">
+          <div class="lokasi-section-title">
+            <i class="fa-solid fa-city"></i> Pilih Kota / Kabupaten
+          </div>
+          <span class="lokasi-section-badge" id="kota-count-badge">0 Kota</span>
+        </div>
+
+        <!-- Search input for cities -->
+        <div class="input-group lokasi-search-group">
+          <i class="fa-solid fa-magnifying-glass input-icon"></i>
+          <input type="text" id="modal-kota-input" placeholder="Cari kota yang tersedia..." autocomplete="off">
+          <button type="button" class="search-clear-btn hidden" id="modal-kota-clear" aria-label="Hapus pencarian">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="lokasi-chips-wrap lokasi-cities-wrap" id="kota-chips-wrap">
+          <!-- Rendered dynamically -->
+        </div>
       </div>
     </div>
 
     <div class="modal-actions">
       <button id="modal-kota-reset" class="btn btn-ghost btn-sm" type="button">
-        <i class="fa-solid fa-globe"></i> Semua Kota
+        <i class="fa-solid fa-globe"></i> Semua Wilayah
       </button>
       <button id="modal-kota-simpan" class="btn btn-sm" type="button">
         <i class="fa-solid fa-check"></i> Terapkan
@@ -197,8 +224,8 @@
   </div>
 </div>
 
-<script src="js/config.js?v=8"></script>
-<script src="js/theme.js?v=8"></script>
-<script src="js/index.js?v=8"></script>
+<script src="js/config.js?v=9"></script>
+<script src="js/theme.js?v=9"></script>
+<script src="js/index.js?v=9"></script>
 </body>
 </html>

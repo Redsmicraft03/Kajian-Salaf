@@ -94,6 +94,7 @@ func GetKajian(c fiber.Ctx) error {
 	database.AutoUpdateStatusKajian()
 
 	kota := strings.TrimSpace(c.Query("kota"))
+	provinsi := strings.TrimSpace(c.Query("provinsi"))
 	waktu := c.Query("waktu", "pekan_ini")
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	limit, _ := strconv.Atoi(c.Query("limit", "20"))
@@ -109,6 +110,9 @@ func GetKajian(c fiber.Ctx) error {
 
 	if kota != "" {
 		query = query.Where("LOWER(kota) = ?", strings.ToLower(kota))
+	}
+	if provinsi != "" {
+		query = query.Where("LOWER(provinsi) = ?", strings.ToLower(provinsi))
 	}
 
 	now := time.Now()
@@ -174,6 +178,45 @@ func GetKajianByID(c fiber.Ctx) error {
 		Success: true,
 		Message: "data berhasil diambil",
 		Data:    kajian,
+	})
+}
+
+// GetLokasi mengambil daftar provinsi dan kota yang memiliki data kajian aktif di database
+func GetLokasi(c fiber.Ctx) error {
+	// 1. Ambil daftar provinsi beserta jumlah kajiannya
+	type ProvinsiItem struct {
+		Nama  string `json:"nama"`
+		Total int64  `json:"total"`
+	}
+	var provList []ProvinsiItem
+	database.DB.Model(&model.Kajian{}).
+		Select("provinsi as nama, count(*) as total").
+		Where("provinsi != '' AND provinsi IS NOT NULL").
+		Group("provinsi").
+		Order("provinsi ASC").
+		Scan(&provList)
+
+	// 2. Ambil daftar kota beserta provinsi dan jumlah kajiannya
+	type KotaItem struct {
+		Nama     string `json:"nama"`
+		Provinsi string `json:"provinsi"`
+		Total    int64  `json:"total"`
+	}
+	var kotaList []KotaItem
+	database.DB.Model(&model.Kajian{}).
+		Select("kota as nama, provinsi, count(*) as total").
+		Where("kota != '' AND kota IS NOT NULL").
+		Group("kota, provinsi").
+		Order("kota ASC").
+		Scan(&kotaList)
+
+	// 3. Kembalikan data lokasi ke response API
+	return c.Status(fiber.StatusOK).JSON(model.APIResponse{
+		Success: true,
+		Data: fiber.Map{
+			"provinsi": provList,
+			"kota":     kotaList,
+		},
 	})
 }
 

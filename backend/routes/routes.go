@@ -21,6 +21,7 @@ func registerRoutes(router fiber.Router) {
 
 	router.Get("/kajian", handler.GetKajian)
 	router.Get("/kajian/:id", handler.GetKajianByID)
+	router.Get("/lokasi", handler.GetLokasi)
 	router.Get("/template-excel", handler.DownloadTemplateExcel)
 }
 

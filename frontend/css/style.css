@@ -1094,47 +1094,249 @@ input:focus, select:focus {
   box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
-.quick-cities {
-  margin-bottom: 20px;
+/* ================= Wilayah & Kota Selection Modal ================= */
+.modal-lokasi-card {
+  max-width: 520px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
 }
 
-.quick-cities-title {
+.modal-lokasi-desc {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  margin-bottom: 12px;
+  line-height: 1.45;
+}
+
+.lokasi-current-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--primary-soft);
+  border: 1px solid var(--primary-border);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 14px;
+}
+
+.lokasi-current-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.lokasi-current-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary-light);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.lokasi-current-value {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .lokasi-current-value {
+  color: var(--primary-border);
+}
+
+.lokasi-clear-link {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.lokasi-clear-link:hover {
+  color: var(--primary);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.lokasi-modal-body {
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: calc(88vh - 210px);
+}
+
+.lokasi-modal-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.lokasi-modal-body::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+.lokasi-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lokasi-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lokasi-section-title {
   font-size: 0.76rem;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--text-subtle);
   letter-spacing: 0.05em;
-  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.city-chips-wrap {
+.lokasi-section-title i {
+  color: var(--primary-light);
+  font-size: 0.82rem;
+}
+
+.lokasi-section-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-subtle);
+  background: var(--bg-subtle);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-light);
+}
+
+.lokasi-chips-wrap {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.city-chip {
+.lokasi-cities-wrap {
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.lokasi-chip {
   background: var(--bg-subtle);
   border: 1px solid var(--border);
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  padding: 5px 12px;
+  padding: 6px 12px;
   border-radius: var(--radius-full);
   cursor: pointer;
   transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
 }
 
-.city-chip:hover {
+.lokasi-chip:hover {
   background: var(--primary-soft);
   border-color: var(--primary-border);
   color: var(--primary);
+  transform: translateY(-1px);
 }
 
-.city-chip.active {
+.lokasi-chip.active {
   background: var(--primary);
   border-color: var(--primary);
   color: #ffffff;
+  box-shadow: 0 2px 8px var(--primary-glow);
+}
+
+.lokasi-chip .chip-count {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
+}
+
+.lokasi-chip.active .chip-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .lokasi-chip .chip-count {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.lokasi-search-group {
+  position: relative;
+  margin-bottom: 2px;
+}
+
+.lokasi-search-group input {
+  padding-left: 38px;
+  padding-right: 36px;
+  padding-top: 9px;
+  padding-bottom: 9px;
+  font-size: 0.88rem;
+  border-radius: var(--radius-md);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-subtle);
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.search-clear-btn:hover {
+  color: var(--text);
+  background: var(--bg-subtle);
+}
+
+.lokasi-empty-hint {
+  width: 100%;
+  padding: 14px 10px;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-subtle);
+  background: var(--bg-subtle);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .modal-actions {
@@ -2623,10 +2825,12 @@ input#remember-me {
   }
 
   /* ================= Bottom-Sheet Style Modals on Mobile ================= */
+  .modal,
   .form-modal {
     align-items: flex-end;
     padding: 0;
   }
+  .modal-card,
   .form-modal-card {
     border-radius: 22px 22px 0 0;
     max-height: 90vh;

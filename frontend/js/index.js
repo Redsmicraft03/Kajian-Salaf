@@ -61,13 +61,24 @@ function skeleton() {
 
 async function loadKajian() {
   const kota = localStorage.getItem("kota") || "";
+  const provinsi = localStorage.getItem("provinsi") || "";
   const params = new URLSearchParams({ page: page, limit: LIMIT, waktu: waktuAktif });
   if (kota) params.set("kota", kota);
+  if (provinsi) params.set("provinsi", provinsi);
 
   skeleton();
   emptyEl.classList.add("hidden");
   errorEl.classList.add("hidden");
-  $("jadwal-sub").textContent = WAKTU_LABEL[waktuAktif] + (kota ? ` di ${kota}.` : ".");
+
+  let wilayahTeks = "";
+  if (kota && provinsi) {
+    wilayahTeks = ` di ${kota}, ${provinsi}`;
+  } else if (kota) {
+    wilayahTeks = ` di ${kota}`;
+  } else if (provinsi) {
+    wilayahTeks = ` di ${provinsi}`;
+  }
+  $("jadwal-sub").textContent = WAKTU_LABEL[waktuAktif] + wilayahTeks + ".";
 
   try {
     const res = await fetch(`${API_BASE}/kajian?${params.toString()}`);
@@ -134,8 +145,10 @@ function render(items) {
 async function loadFeatured() {
   try {
     const kota = localStorage.getItem("kota") || "";
+    const provinsi = localStorage.getItem("provinsi") || "";
     const params = new URLSearchParams({ waktu: "mendatang", limit: 1, page: 1 });
     if (kota) params.set("kota", kota);
+    if (provinsi) params.set("provinsi", provinsi);
     const res = await fetch(`${API_BASE}/kajian?${params.toString()}`);
     const json = await res.json();
     const k = (json.data.data || [])[0];
@@ -189,30 +202,216 @@ async function loadFeatured() {
   }
 }
 
-/* ---------- kota ---------- */
-function refreshKotaLabel() {
-  const kota = localStorage.getItem("kota");
-  $("kota-nama").textContent = kota || "Semua kota";
-  $("hero-kota-nama").textContent = kota || "Pilih kota";
+/* ---------- data lokasi & modal filter ---------- */
+let lokasiData = { provinsi: [], kota: [] };
+let tempProvinsi = "";
+let tempKota = "";
+
+async function fetchLokasi() {
+  try {
+    const res = await fetch(`${API_BASE}/lokasi`);
+    const json = await res.json();
+    if (json.success && json.data) {
+      lokasiData = {
+        provinsi: json.data.provinsi || [],
+        kota: json.data.kota || []
+      };
+    }
+  } catch (e) {
+    console.error("Gagal memuat data lokasi:", e);
+  }
 }
 
-function bukaModalKota() {
-  $("modal-kota-input").value = localStorage.getItem("kota") || "";
-  $("modal-kota").classList.remove("hidden");
-  
-  // highlight chip if selected
-  const cur = (localStorage.getItem("kota") || "").toLowerCase();
-  document.querySelectorAll(".city-chip").forEach(c => {
-    c.classList.toggle("active", c.dataset.city.toLowerCase() === cur);
+function refreshKotaLabel() {
+  const kota = localStorage.getItem("kota") || "";
+  const provinsi = localStorage.getItem("provinsi") || "";
+
+  let label = "Semua wilayah";
+  let heroLabel = "Pilih kota";
+
+  if (kota) {
+    label = kota;
+    heroLabel = kota;
+  } else if (provinsi) {
+    label = provinsi;
+    heroLabel = provinsi;
+  }
+
+  $("kota-nama").textContent = label;
+  $("hero-kota-nama").textContent = heroLabel;
+}
+
+function updateCurrentLokasiBar() {
+  const valEl = $("lokasi-current-value");
+  const clearBtn = $("lokasi-clear-selection");
+
+  if (tempKota && tempProvinsi) {
+    valEl.textContent = `${tempKota} (${tempProvinsi})`;
+    if (clearBtn) clearBtn.classList.remove("hidden");
+  } else if (tempKota) {
+    valEl.textContent = tempKota;
+    if (clearBtn) clearBtn.classList.remove("hidden");
+  } else if (tempProvinsi) {
+    valEl.textContent = `Provinsi ${tempProvinsi}`;
+    if (clearBtn) clearBtn.classList.remove("hidden");
+  } else {
+    valEl.textContent = "Semua Wilayah";
+    if (clearBtn) clearBtn.classList.add("hidden");
+  }
+}
+
+function renderProvinsiChips() {
+  const container = $("provinsi-chips-wrap");
+  const badge = $("provinsi-count-badge");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const provList = lokasiData.provinsi || [];
+  if (badge) badge.textContent = `${provList.length} Provinsi`;
+
+  if (provList.length === 0) {
+    container.innerHTML = `<div class="lokasi-empty-hint"><i class="fa-solid fa-circle-info"></i> Belum ada data provinsi.</div>`;
+    return;
+  }
+
+  // Chip "Semua Provinsi"
+  const allChip = document.createElement("button");
+  allChip.type = "button";
+  allChip.className = "lokasi-chip" + (!tempProvinsi ? " active" : "");
+  allChip.innerHTML = `<i class="fa-solid fa-globe"></i> Semua`;
+  allChip.onclick = () => {
+    tempProvinsi = "";
+    renderProvinsiChips();
+    renderKotaChips($("modal-kota-input") ? $("modal-kota-input").value.trim() : "");
+    updateCurrentLokasiBar();
+  };
+  container.appendChild(allChip);
+
+  provList.forEach((p) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "lokasi-chip" + (tempProvinsi.toLowerCase() === p.nama.toLowerCase() ? " active" : "");
+    btn.innerHTML = `<span>${esc(p.nama)}</span> <span class="chip-count">${p.total}</span>`;
+    btn.onclick = () => {
+      if (tempProvinsi.toLowerCase() === p.nama.toLowerCase()) {
+        tempProvinsi = "";
+      } else {
+        tempProvinsi = p.nama;
+        if (tempKota) {
+          const matching = (lokasiData.kota || []).find(
+            (k) => k.nama.toLowerCase() === tempKota.toLowerCase() && (k.provinsi || "").toLowerCase() === p.nama.toLowerCase()
+          );
+          if (!matching) tempKota = "";
+        }
+      }
+      renderProvinsiChips();
+      renderKotaChips($("modal-kota-input") ? $("modal-kota-input").value.trim() : "");
+      updateCurrentLokasiBar();
+    };
+    container.appendChild(btn);
   });
-  
-  setTimeout(() => $("modal-kota-input").focus(), 80);
+}
+
+function renderKotaChips(searchFilter = "") {
+  const container = $("kota-chips-wrap");
+  const badge = $("kota-count-badge");
+  if (!container) return;
+  container.innerHTML = "";
+
+  let list = lokasiData.kota || [];
+
+  // Filter berdasarkan provinsi jika ada provinsi yang dipilih
+  if (tempProvinsi) {
+    list = list.filter((k) => (k.provinsi || "").toLowerCase() === tempProvinsi.toLowerCase());
+  }
+
+  // Filter berdasarkan teks pencarian
+  if (searchFilter) {
+    const q = searchFilter.toLowerCase();
+    list = list.filter((k) => k.nama.toLowerCase().includes(q) || (k.provinsi && k.provinsi.toLowerCase().includes(q)));
+  }
+
+  if (badge) badge.textContent = `${list.length} Kota`;
+
+  if (list.length === 0) {
+    container.innerHTML = `<div class="lokasi-empty-hint"><i class="fa-solid fa-circle-info"></i> Tidak ada kota yang sesuai.</div>`;
+    return;
+  }
+
+  list.forEach((k) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    const isActive = tempKota.toLowerCase() === k.nama.toLowerCase();
+    btn.className = "lokasi-chip" + (isActive ? " active" : "");
+    btn.innerHTML = `<span>${esc(k.nama)}</span> <span class="chip-count">${k.total}</span>`;
+    btn.title = k.provinsi ? `${k.nama}, ${k.provinsi}` : k.nama;
+    btn.onclick = () => {
+      tempKota = k.nama;
+      if (k.provinsi) tempProvinsi = k.provinsi;
+      simpanDanTerapkanLokasi();
+    };
+    container.appendChild(btn);
+  });
+}
+
+async function bukaModalKota() {
+  if (!lokasiData.provinsi.length && !lokasiData.kota.length) {
+    await fetchLokasi();
+  }
+
+  tempProvinsi = localStorage.getItem("provinsi") || "";
+  tempKota = localStorage.getItem("kota") || "";
+
+  const inputEl = $("modal-kota-input");
+  if (inputEl) inputEl.value = "";
+  const clearInputBtn = $("modal-kota-clear");
+  if (clearInputBtn) clearInputBtn.classList.add("hidden");
+
+  renderProvinsiChips();
+  renderKotaChips("");
+  updateCurrentLokasiBar();
+
+  $("modal-kota").classList.remove("hidden");
+  if (inputEl) setTimeout(() => inputEl.focus(), 80);
 }
 
 function tutupModalKota() {
   $("modal-kota").classList.add("hidden");
 }
 
+function simpanDanTerapkanLokasi() {
+  if (tempKota) {
+    localStorage.setItem("kota", tempKota);
+  } else {
+    localStorage.removeItem("kota");
+  }
+
+  if (tempProvinsi) {
+    localStorage.setItem("provinsi", tempProvinsi);
+  } else {
+    localStorage.removeItem("provinsi");
+  }
+
+  tutupModalKota();
+  refreshKotaLabel();
+  page = 1;
+  loadKajian();
+  loadFeatured();
+}
+
+function resetSemuaLokasi() {
+  localStorage.removeItem("kota");
+  localStorage.removeItem("provinsi");
+  tempKota = "";
+  tempProvinsi = "";
+  tutupModalKota();
+  refreshKotaLabel();
+  page = 1;
+  loadKajian();
+  loadFeatured();
+}
+
+// Event Listeners Lokasi
 $("hero-kota").addEventListener("click", bukaModalKota);
 $("btn-ganti-kota").addEventListener("click", bukaModalKota);
 
@@ -229,37 +428,60 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Quick city chips
-document.querySelectorAll(".city-chip").forEach((chip) => {
-  chip.addEventListener("click", () => {
-    $("modal-kota-input").value = chip.dataset.city;
-    $("modal-kota-simpan").click();
+const clearSelectionBtn = $("lokasi-clear-selection");
+if (clearSelectionBtn) {
+  clearSelectionBtn.addEventListener("click", () => {
+    tempKota = "";
+    tempProvinsi = "";
+    renderProvinsiChips();
+    renderKotaChips($("modal-kota-input") ? $("modal-kota-input").value.trim() : "");
+    updateCurrentLokasiBar();
   });
-});
+}
 
-$("modal-kota-reset").addEventListener("click", () => {
-  localStorage.removeItem("kota");
-  tutupModalKota();
-  refreshKotaLabel();
-  page = 1;
-  loadKajian();
-  loadFeatured();
-});
+const inputKota = $("modal-kota-input");
+const btnClearSearch = $("modal-kota-clear");
 
-$("modal-kota-simpan").addEventListener("click", () => {
-  const v = $("modal-kota-input").value.trim();
-  if (v) localStorage.setItem("kota", v);
-  else localStorage.removeItem("kota");
-  tutupModalKota();
-  refreshKotaLabel();
-  page = 1;
-  loadKajian();
-  loadFeatured();
-});
+if (inputKota) {
+  inputKota.addEventListener("input", () => {
+    const v = inputKota.value.trim();
+    if (btnClearSearch) btnClearSearch.classList.toggle("hidden", !v);
+    renderKotaChips(v);
+  });
 
-$("modal-kota-input").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") $("modal-kota-simpan").click();
-});
+  inputKota.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const v = inputKota.value.trim();
+      if (v) {
+        // Cari apakah ada kota yang cocok
+        const match = (lokasiData.kota || []).find(
+          (k) => k.nama.toLowerCase() === v.toLowerCase()
+        );
+        if (match) {
+          tempKota = match.nama;
+          if (match.provinsi) tempProvinsi = match.provinsi;
+        } else {
+          tempKota = v;
+        }
+      }
+      simpanDanTerapkanLokasi();
+    }
+  });
+}
+
+if (btnClearSearch) {
+  btnClearSearch.addEventListener("click", () => {
+    if (inputKota) {
+      inputKota.value = "";
+      inputKota.focus();
+    }
+    btnClearSearch.classList.add("hidden");
+    renderKotaChips("");
+  });
+}
+
+$("modal-kota-reset").addEventListener("click", resetSemuaLokasi);
+$("modal-kota-simpan").addEventListener("click", simpanDanTerapkanLokasi);
 
 /* ---------- chips & pagination ---------- */
 document.querySelectorAll(".chip").forEach((chip) => {
@@ -290,5 +512,6 @@ $("next").addEventListener("click", () => {
 
 /* ---------- init ---------- */
 refreshKotaLabel();
+fetchLokasi();
 loadKajian();
 loadFeatured();
