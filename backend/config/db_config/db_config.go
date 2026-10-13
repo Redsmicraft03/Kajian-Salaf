@@ -9,6 +9,7 @@ var (
 	DB_NAME     = ""
 	DB_USER     = ""
 	DB_PASSWORD = ""
+	DB_SSLMODE  = "disable"
 )
 
 func InitDatabaseConfig() {
@@ -40,5 +41,10 @@ func InitDatabaseConfig() {
 	passwordEnv := os.Getenv("DB_PASSWORD")
 	if passwordEnv != "" {
 		DB_PASSWORD = passwordEnv
+	}
+
+	sslEnv := os.Getenv("DB_SSLMODE")
+	if sslEnv != "" {
+		DB_SSLMODE = sslEnv
 	}
 }

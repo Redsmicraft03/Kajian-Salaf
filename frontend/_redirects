@@ -1,0 +1,6 @@
+# Cloudflare Pages Rewrites (200 status code retains the clean URL in browser)
+/v1/admin   /admin.html   200
+/v1/login   /admin.html   200
+/admin      /admin.html   200
+/login      /admin.html   200
+/detail     /detail.html  200

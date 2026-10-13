@@ -1,0 +1,68 @@
+services:
+  # ==========================================================
+  # Backend Go (Fiber v3 + GORM)
+  # Terhubung ke PostgreSQL utama di port 5432 (civitas-db)
+  # ==========================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: kajian_salaf_backend
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      PORT: 8080
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USER: ${DB_USER:-akio}
+      DB_PASSWORD: ${DB_PASSWORD:-404062}
+      DB_NAME: ${DB_NAME:-kajian_salaf}
+      DB_SSLMODE: disable
+      JWT_SECRET: ${JWT_SECRET:-kajian_salaf_super_secret_jwt_key_2026}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+    ports:
+      - "${BACKEND_PORT:-8787}:8080"
+    networks:
+      - kajian_net
+
+  # ==========================================================
+  # Frontend Nginx (Statis HTML + CSS + JS)
+  # Dilengkapi Reverse Proxy ke Backend Go
+  # ==========================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: kajian_salaf_frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3012}:80"
+    depends_on:
+      - backend
+    networks:
+      - kajian_net
+
+  # ==========================================================
+  # Cloudflare Tunnel (cloudflared)
+  # Menghubungkan container lokal/laptop ke Cloudflare secara aman
+  # Jalankan dengan: docker-compose --profile tunnel up -d
+  # ==========================================================
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: kajian_salaf_cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    environment:
+      CLOUDFLARE_TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    profiles:
+      - tunnel
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - kajian_net
+
+networks:
+  kajian_net:
+    driver: bridge

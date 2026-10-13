@@ -45,6 +45,13 @@ func LoginHandler(c fiber.Ctx) error {
 		})
 	}
 
+	if strings.ToLower(user.Role) != "admin" {
+		return c.Status(fiber.StatusForbidden).JSON(model.APIResponse{
+			Success: false,
+			Message: "Akses ditolak: Akun Anda bukan Administrator (Role: " + user.Role + ")",
+		})
+	}
+
 	token, err := utils.GenerateJWT(user.ID, user.Email, user.Role, jwtconfig.JWT_secret, req.RememberMe)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(model.APIResponse{

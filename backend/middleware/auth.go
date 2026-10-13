@@ -2,6 +2,7 @@ package middleware
 
 import (
 	jwtconfig "backend-kajian-salaf/config/jwt_config"
+	"backend-kajian-salaf/database"
 	"backend-kajian-salaf/model"
 	"backend-kajian-salaf/utils"
 	"strings"
@@ -46,13 +47,23 @@ func Protected() fiber.Handler {
 
 func AdminOnly() fiber.Handler {
 	return func(c fiber.Ctx) error {
-		role, ok := c.Locals("role").(string)
-		if !ok || strings.ToLower(role) != "admin" {
+		userID, ok := c.Locals("user_id").(uint)
+		if !ok || userID == 0 {
 			return c.Status(fiber.StatusForbidden).JSON(model.APIResponse{
 				Success: false,
 				Message: "Akses ditolak: Fitur ini hanya dapat diakses oleh Administrator",
 			})
 		}
+
+		// Validasi langsung ke database secara real-time
+		var user model.User
+		if err := database.DB.Select("id, role").First(&user, userID).Error; err != nil || strings.ToLower(user.Role) != "admin" {
+			return c.Status(fiber.StatusForbidden).JSON(model.APIResponse{
+				Success: false,
+				Message: "Akses ditolak: Akun Anda bukan Administrator",
+			})
+		}
+
 		return c.Next()
 	}
 }

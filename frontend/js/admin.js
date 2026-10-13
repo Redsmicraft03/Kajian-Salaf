@@ -96,6 +96,7 @@ $("btn-login").addEventListener("click", async () => {
 
   const emailVal = $("email").value.trim();
   const passVal = $("password").value;
+  const rememberVal = $("remember-me") ? $("remember-me").checked : false;
 
   if (!emailVal || !passVal) {
     errText.textContent = "Email dan kata sandi wajib diisi.";
@@ -107,12 +108,28 @@ $("btn-login").addEventListener("click", async () => {
     const res = await fetch(`${API_BASE}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: emailVal, password: passVal }),
+      body: JSON.stringify({ 
+        email: emailVal, 
+        password: passVal,
+        remember_me: rememberVal
+      }),
     });
     const json = await res.json();
     if (!json.success) throw new Error(json.message || "Login gagal");
+    if (!json.data || !json.data.user || json.data.user.role !== "admin") {
+      const currentRole = json.data?.user?.role || "member";
+      throw new Error(`Akses ditolak: Akun Anda memiliki role '${currentRole}'. Halaman ini khusus Administrator.`);
+    }
+
+    if (rememberVal) {
+      localStorage.setItem("remember_email", emailVal);
+    } else {
+      localStorage.removeItem("remember_email");
+    }
+
     localStorage.setItem("jwt", json.data.token);
     localStorage.setItem("admin_name", json.data.user.name || "Administrator");
+    localStorage.setItem("admin_role", json.data.user.role || "admin");
     showApp();
     showToast("Berhasil masuk ke panel admin.");
   } catch (e) {
@@ -128,6 +145,7 @@ $("password").addEventListener("keydown", (e) => {
 $("btn-logout").addEventListener("click", () => {
   localStorage.removeItem("jwt");
   localStorage.removeItem("admin_name");
+  localStorage.removeItem("admin_role");
   window.location.href = "/v1/login";
 });
 
@@ -137,6 +155,13 @@ function showLogin() {
   document.title = "Login Admin — Jadwal Kajian Salaf";
   if (window.location.pathname !== "/v1/login" && window.location.pathname !== "/login") {
     window.history.replaceState(null, "", "/v1/login");
+  }
+
+  // Restore saved email if remember me was active
+  const savedEmail = localStorage.getItem("remember_email");
+  if (savedEmail && $("email")) {
+    $("email").value = savedEmail;
+    if ($("remember-me")) $("remember-me").checked = true;
   }
 }
 
@@ -168,6 +193,17 @@ async function loadList() {
       headers: authHeaders(),
     });
     const json = await res.json();
+    if (res.status === 401 || res.status === 403) {
+      localStorage.removeItem("jwt");
+      localStorage.removeItem("admin_name");
+      localStorage.removeItem("admin_role");
+      showLogin();
+      const errBox = $("login-err");
+      const errText = $("login-err-text");
+      errText.textContent = json.message || "Akses ditolak: Akun Anda bukan Administrator.";
+      errBox.classList.remove("hidden");
+      return;
+    }
     if (!json.success) throw new Error(json.message || "Gagal memuat data");
 
     rawItems = json.data.data || [];
@@ -705,8 +741,11 @@ $("btn-konfirmasi-hapus").addEventListener("click", async () => {
 });
 
 /* ================= Init ================= */
-if (getToken()) {
+if (getToken() && localStorage.getItem("admin_role") === "admin") {
   showApp();
 } else {
+  localStorage.removeItem("jwt");
+  localStorage.removeItem("admin_name");
+  localStorage.removeItem("admin_role");
   showLogin();
 }

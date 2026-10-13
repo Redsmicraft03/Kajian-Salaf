@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
 
@@ -57,6 +57,13 @@
     <div class="input-group">
       <i class="fa-solid fa-lock input-icon"></i>
       <input type="password" id="password" placeholder="Kata Sandi" autocomplete="current-password">
+    </div>
+
+    <div class="login-options" style="display:flex;align-items:center;margin:4px 0 16px 0;">
+      <label class="remember-me-label" for="remember-me" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:0.88rem;color:var(--text-muted,#64748b);">
+        <input type="checkbox" id="remember-me" style="width:16px;min-width:16px;height:16px;cursor:pointer;accent-color:var(--primary,#0f766e);margin:0;padding:0;border:none;background:transparent;box-shadow:none;">
+        <span style="line-height:1;">Ingat saya</span>
+      </label>
     </div>
 
     <button id="btn-login" class="btn" style="width:100%;margin-top:4px;">
@@ -424,8 +431,8 @@
   </div>
 </footer>
 
-<script src="js/config.js"></script>
-<script src="js/theme.js"></script>
-<script src="js/admin.js"></script>
+<script src="js/config.js?v=6"></script>
+<script src="js/theme.js?v=6"></script>
+<script src="js/admin.js?v=6"></script>
 </body>
 </html>

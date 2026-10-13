@@ -2207,3 +2207,54 @@ input[type="datetime-local"] {
     grid-template-columns: 1fr;
   }
 }
+
+/* Remember Me Checkbox */
+.login-options {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  margin: 4px 0 16px 0 !important;
+  width: 100% !important;
+}
+
+.remember-me-label {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+  color: var(--text-muted) !important;
+  line-height: 1 !important;
+  transition: color 0.2s ease !important;
+}
+
+.remember-me-label:hover {
+  color: var(--text) !important;
+}
+
+.remember-me-label input[type="checkbox"],
+input#remember-me {
+  width: 16px !important;
+  min-width: 16px !important;
+  max-width: 16px !important;
+  height: 16px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  accent-color: var(--primary, #0f766e) !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+.remember-me-label span {
+  display: inline-block !important;
+  line-height: 1 !important;
+}
+
+
