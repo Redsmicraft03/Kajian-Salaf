@@ -45,4 +45,37 @@ func InitDatabase() {
 	}
 
 	log.Println("Berhasil terhubung ke database")
+
+	// Jalankan scheduler auto-update status kajian
+	StartStatusScheduler()
 }
+
+// AutoUpdateStatusKajian memperbarui status kajian dari 'upcoming' menjadi 'selesai'
+// jika waktu_mulai + 2 jam sudah terlewati. Status 'batal' tidak akan disentuh.
+func AutoUpdateStatusKajian() {
+	if DB == nil {
+		return
+	}
+	cutoff := time.Now().Add(-2 * time.Hour)
+	result := DB.Model(&model.Kajian{}).
+		Where("waktu_mulai <= ? AND status = ?", cutoff, "upcoming").
+		Update("status", "selesai")
+	if result.Error != nil {
+		log.Printf("Gagal auto-update status kajian: %v\n", result.Error)
+	} else if result.RowsAffected > 0 {
+		log.Printf("Otomatis memperbarui %d kajian menjadi 'selesai'\n", result.RowsAffected)
+	}
+}
+
+// StartStatusScheduler menjalankan background ticker untuk memperbarui status berkala setiap 10 menit
+func StartStatusScheduler() {
+	go func() {
+		AutoUpdateStatusKajian()
+		ticker := time.NewTicker(10 * time.Minute)
+		defer ticker.Stop()
+		for range ticker.C {
+			AutoUpdateStatusKajian()
+		}
+	}()
+}
+

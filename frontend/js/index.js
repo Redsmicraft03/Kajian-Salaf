@@ -112,6 +112,7 @@ function render(items) {
           <div class="card-badges">
             ${renderBadge(k.untuk)}
             ${k.status === 'batal' ? '<span class="badge" style="background:rgba(220,38,38,0.15);color:#dc2626;border:1px solid rgba(220,38,38,0.3)"><i class="fa-solid fa-circle-xmark"></i> Dibatalkan</span>' : ''}
+            ${k.status === 'selesai' ? '<span class="badge" style="background:var(--bg-subtle);color:var(--text-muted);border:1px solid var(--border)"><i class="fa-solid fa-circle-check"></i> Selesai</span>' : ''}
             ${k.live_url ? '<span class="badge" style="background:rgba(239,68,68,0.12);color:#dc2626;border:1px solid rgba(239,68,68,0.3)"><i class="fa-solid fa-tower-broadcast"></i> Live</span>' : ''}
           </div>
           <h3>${esc(k.judul)}</h3>

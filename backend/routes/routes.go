@@ -13,12 +13,15 @@ func registerRoutes(router fiber.Router) {
 
 	admin := router.Group("/admin", middleware.Protected(), middleware.AdminOnly())
 	admin.Post("/tambah-kajian", handler.CreateKajian)
+	admin.Post("/bulk-kajian", handler.BulkCreateKajian)
+	admin.Get("/template-excel", handler.DownloadTemplateExcel)
 	admin.Get("/kajian", handler.GetKajian)
 	admin.Put("/kajian/:id", handler.UpdateKajian)
 	admin.Delete("/kajian/:id", handler.DeleteKajian)
 
 	router.Get("/kajian", handler.GetKajian)
 	router.Get("/kajian/:id", handler.GetKajianByID)
+	router.Get("/template-excel", handler.DownloadTemplateExcel)
 }
 
 func InitRoutes(app *fiber.App) {

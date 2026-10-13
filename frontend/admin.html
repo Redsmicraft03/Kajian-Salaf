@@ -91,6 +91,12 @@
         </div>
       </div>
       <div class="admin-hero-actions">
+        <a id="btn-quick-template" href="/api/v1/template-excel" download="template_import_kajian_salaf.xlsx" class="btn btn-ghost" style="color:#ffffff;border-color:rgba(255,255,255,0.35);background:rgba(255,255,255,0.12);text-decoration:none;" title="Unduh Template Excel">
+          <i class="fa-solid fa-file-arrow-down"></i> Unduh Template
+        </a>
+        <button id="btn-bulk" class="btn btn-ghost" style="color:#ffffff;border-color:rgba(255,255,255,0.35);background:rgba(255,255,255,0.12)">
+          <i class="fa-solid fa-file-excel"></i> Import Excel
+        </button>
         <button id="btn-tambah" class="btn btn-gold">
           <i class="fa-solid fa-plus"></i> Tambah Kajian Baru
         </button>
@@ -388,6 +394,86 @@
   </div>
 </div>
 
+<!-- Modal Bulk Import Excel -->
+<div id="modal-bulk" class="form-modal hidden" role="dialog" aria-modal="true">
+  <div class="form-modal-card" style="max-width: 560px;">
+    <div class="form-modal-header">
+      <h2>
+        <i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Import Kajian via Excel
+      </h2>
+      <button class="modal-close" id="btn-close-bulk" aria-label="Tutup form">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+      <p style="color: var(--text-muted); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px;">
+        Unggah file Excel (<strong>.xlsx</strong>) atau <strong>.csv</strong> untuk menambahkan banyak jadwal kajian sekaligus secara otomatis.
+      </p>
+
+      <!-- Unduh Template Card -->
+      <div style="background: var(--bg-subtle); border: 1.5px dashed var(--border); border-radius: var(--radius-md); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-table" style="color: var(--primary); font-size: 1.3rem;"></i>
+          <div>
+            <div style="font-weight: 700; font-size: 0.9rem;">Belum punya template Excel?</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Format kolom sudah disesuaikan dengan contoh</div>
+          </div>
+        </div>
+        <a id="btn-download-template" href="/api/v1/template-excel" download="template_import_kajian_salaf.xlsx" class="btn btn-ghost btn-sm" style="flex-shrink: 0; text-decoration: none;">
+          <i class="fa-solid fa-download"></i> Unduh Template
+        </a>
+      </div>
+
+      <!-- Dropzone / File Input Area -->
+      <div id="dropzone" style="border: 2px dashed var(--primary-border); background: var(--card); border-radius: var(--radius-lg); padding: 28px 20px; text-align: center; cursor: pointer; transition: all 0.2s ease;">
+        <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.2rem; color: var(--primary); margin-bottom: 10px; display: block;"></i>
+        <div style="font-weight: 700; font-size: 1rem; margin-bottom: 4px;" id="dropzone-label">Pilih atau seret file Excel ke sini</div>
+        <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">Mendukung format .xlsx dan .csv (Maksimal 10 MB)</div>
+        <input type="file" id="f-excel" accept=".xlsx,.csv" style="display: none;">
+        <button type="button" class="btn btn-sm btn-ghost" id="btn-pilih-file">
+          <i class="fa-solid fa-folder-open"></i> Cari Berkas
+        </button>
+      </div>
+
+      <!-- File Selected Card -->
+      <div id="file-info" class="hidden" style="margin-top: 14px; background: var(--primary-soft); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+          <i class="fa-solid fa-file-excel" style="color: var(--primary); font-size: 1.2rem;"></i>
+          <span id="file-name" style="font-weight: 700; font-size: 0.88rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"></span>
+        </div>
+        <button type="button" id="btn-hapus-file" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;" title="Ganti file">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Error Banner -->
+      <div id="bulk-err" class="error-banner hidden" style="margin-top: 14px;">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span id="bulk-err-text"></span>
+      </div>
+
+      <!-- Result Summary Box -->
+      <div id="bulk-result" class="hidden" style="margin-top: 14px; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px;">
+        <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;" id="bulk-result-title">
+          <i class="fa-solid fa-circle-check" style="color: #10b981;"></i> Hasil Impor
+        </div>
+        <div id="bulk-result-text" style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 8px;"></div>
+        <ul id="bulk-result-errors" style="font-size: 0.82rem; color: #ef4444; padding-left: 18px; margin: 0; max-height: 120px; overflow-y: auto;"></ul>
+      </div>
+    </div>
+
+    <div class="form-grid-actions">
+      <button type="button" id="btn-batal-bulk" class="btn btn-ghost">
+        <i class="fa-solid fa-xmark"></i> Tutup
+      </button>
+      <button type="button" id="btn-upload-bulk" class="btn btn-gold" disabled>
+        <i class="fa-solid fa-upload"></i> Mulai Impor Data
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Konfirmasi Hapus -->
 <div id="modal-hapus" class="form-modal hidden" role="dialog" aria-modal="true">
   <div class="form-modal-card" style="max-width: 440px; text-align: center; padding: 32px 24px;">
@@ -431,8 +517,8 @@
   </div>
 </footer>
 
-<script src="js/config.js?v=6"></script>
-<script src="js/theme.js?v=6"></script>
-<script src="js/admin.js?v=6"></script>
+<script src="js/config.js?v=7"></script>
+<script src="js/theme.js?v=7"></script>
+<script src="js/admin.js?v=7"></script>
 </body>
 </html>

@@ -24,6 +24,27 @@ const MIME_TYPES = {
 const server = http.createServer((req, res) => {
   let urlPath = req.url.split('?')[0];
 
+  // Proxy API request ke backend (port 8081 / 8080)
+  if (urlPath.startsWith('/api/')) {
+    const backendPort = process.env.BACKEND_PORT || 8081;
+    const proxyReq = http.request({
+      hostname: '127.0.0.1',
+      port: backendPort,
+      path: req.url,
+      method: req.method,
+      headers: { ...req.headers, host: `127.0.0.1:${backendPort}` },
+    }, (proxyRes) => {
+      res.writeHead(proxyRes.statusCode, proxyRes.headers);
+      proxyRes.pipe(res);
+    });
+    proxyReq.on('error', (e) => {
+      res.writeHead(502, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, message: 'Backend unreachable: ' + e.message }));
+    });
+    req.pipe(proxyReq);
+    return;
+  }
+
   // Routing clean URL
   if (
     urlPath === '/v1/login' || urlPath === '/v1/login/' || urlPath === '/login' ||

@@ -74,6 +74,9 @@ function renderTimeBadge(iso, status) {
   if (status === "batal") {
     return `<span class="badge" style="background:rgba(220,38,38,0.15);color:#dc2626;border:1px solid rgba(220,38,38,0.3)"><i class="fa-solid fa-circle-xmark"></i> Batal</span>`;
   }
+  if (status === "selesai") {
+    return `<span class="badge" style="background:var(--bg-subtle);color:var(--text-muted);border:1px solid var(--border)"><i class="fa-solid fa-circle-check"></i> Selesai</span>`;
+  }
   const now = Date.now();
   const target = new Date(iso).getTime();
   const isPast = target < now;
@@ -238,8 +241,8 @@ function calculateStats() {
     const created = new Date(k.CreatedAt || k.created_at || k.waktu_mulai).getTime();
     if (created >= sevenDaysAgo) baruCount++;
     if (t >= startOfWeek && t < endOfWeek) pekanCount++;
-    if (t >= nowMs) mendatangCount++;
-    else lewatCount++;
+    if (k.status === "selesai" || t < nowMs) lewatCount++;
+    else if (k.status !== "batal") mendatangCount++;
   });
 
   $("stat-total").textContent = total;
@@ -272,8 +275,8 @@ function getFilteredItems() {
     // Filter waktu
     if (filterWaktu === "baru" && !(created >= sevenDaysAgo)) return false;
     if (filterWaktu === "pekan_ini" && !(t >= startOfWeek && t < endOfWeek)) return false;
-    if (filterWaktu === "mendatang" && !(t >= nowMs)) return false;
-    if (filterWaktu === "lewat" && !(t < nowMs)) return false;
+    if (filterWaktu === "mendatang" && !(k.status !== "selesai" && k.status !== "batal" && t >= nowMs)) return false;
+    if (filterWaktu === "lewat" && !(k.status === "selesai" || t < nowMs)) return false;
 
     // Filter search text
     if (searchQuery) {
@@ -639,6 +642,7 @@ $("modal-form").addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     if (!$("modal-form").classList.contains("hidden")) tutupModalForm();
+    if (!$("modal-bulk").classList.contains("hidden")) tutupModalBulk();
     if (!$("modal-hapus").classList.contains("hidden")) tutupModalHapus();
   }
 });
@@ -737,6 +741,173 @@ $("btn-konfirmasi-hapus").addEventListener("click", async () => {
   } finally {
     btn.disabled = false;
     btn.innerHTML = `<i class="fa-solid fa-trash-can"></i> Ya, Hapus`;
+  }
+});
+
+/* ================= Modal Bulk Import Excel ================= */
+let selectedExcelFile = null;
+
+function bukaModalBulk() {
+  selectedExcelFile = null;
+  $("f-excel").value = "";
+  $("file-info").classList.add("hidden");
+  $("dropzone-label").textContent = "Pilih atau seret file Excel ke sini";
+  $("bulk-err").classList.add("hidden");
+  $("bulk-result").classList.add("hidden");
+  $("btn-upload-bulk").disabled = true;
+  $("btn-upload-bulk").innerHTML = `<i class="fa-solid fa-upload"></i> Mulai Impor Data`;
+  $("modal-bulk").classList.remove("hidden");
+}
+
+function tutupModalBulk() {
+  $("modal-bulk").classList.add("hidden");
+}
+
+function setExcelFile(file) {
+  if (!file) return;
+  const name = file.name.toLowerCase();
+  if (!name.endsWith(".xlsx") && !name.endsWith(".csv")) {
+    $("bulk-err-text").textContent = "Format file tidak didukung. Harap pilih file .xlsx atau .csv";
+    $("bulk-err").classList.remove("hidden");
+    return;
+  }
+  selectedExcelFile = file;
+  $("file-name").textContent = file.name + ` (${(file.size / 1024).toFixed(1)} KB)`;
+  $("file-info").classList.remove("hidden");
+  $("bulk-err").classList.add("hidden");
+  $("bulk-result").classList.add("hidden");
+  $("btn-upload-bulk").disabled = false;
+}
+
+$("btn-bulk").addEventListener("click", bukaModalBulk);
+$("btn-close-bulk").addEventListener("click", tutupModalBulk);
+$("btn-batal-bulk").addEventListener("click", tutupModalBulk);
+$("modal-bulk").addEventListener("click", (e) => {
+  if (e.target === $("modal-bulk")) tutupModalBulk();
+});
+
+$("btn-pilih-file").addEventListener("click", (e) => {
+  e.stopPropagation();
+  $("f-excel").click();
+});
+
+$("dropzone").addEventListener("click", () => {
+  $("f-excel").click();
+});
+
+$("f-excel").addEventListener("change", (e) => {
+  if (e.target.files && e.target.files[0]) {
+    setExcelFile(e.target.files[0]);
+  }
+});
+
+// Drag and drop event listeners
+const dropzone = $("dropzone");
+dropzone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dropzone.style.borderColor = "var(--primary)";
+  dropzone.style.backgroundColor = "var(--primary-soft)";
+});
+
+dropzone.addEventListener("dragleave", (e) => {
+  e.preventDefault();
+  dropzone.style.borderColor = "var(--primary-border)";
+  dropzone.style.backgroundColor = "var(--card)";
+});
+
+dropzone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropzone.style.borderColor = "var(--primary-border)";
+  dropzone.style.backgroundColor = "var(--card)";
+  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    setExcelFile(e.dataTransfer.files[0]);
+  }
+});
+
+$("btn-hapus-file").addEventListener("click", (e) => {
+  e.stopPropagation();
+  selectedExcelFile = null;
+  $("f-excel").value = "";
+  $("file-info").classList.add("hidden");
+  $("btn-upload-bulk").disabled = true;
+});
+
+// Konfigurasi Link Unduh Template Excel (Download asli tanpa blob agar nama file berekstensi .xlsx)
+function setupTemplateDownloadLinks() {
+  const downloadUrl = `${API_BASE}/template-excel`;
+  
+  const btnQuick = $("btn-quick-template");
+  if (btnQuick) {
+    btnQuick.href = downloadUrl;
+    btnQuick.addEventListener("click", () => {
+      showToast("Mengunduh template_import_kajian_salaf.xlsx...");
+    });
+  }
+
+  const btnModal = $("btn-download-template");
+  if (btnModal) {
+    btnModal.href = downloadUrl;
+    btnModal.addEventListener("click", () => {
+      showToast("Mengunduh template_import_kajian_salaf.xlsx...");
+    });
+  }
+}
+
+setupTemplateDownloadLinks();
+
+// Upload & Impor Data Excel
+$("btn-upload-bulk").addEventListener("click", async () => {
+  if (!selectedExcelFile) return;
+
+  const btn = $("btn-upload-bulk");
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengimpor Data...`;
+  $("bulk-err").classList.add("hidden");
+  $("bulk-result").classList.add("hidden");
+
+  const formData = new FormData();
+  formData.append("file", selectedExcelFile);
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/bulk-kajian`, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + getToken(),
+      },
+      body: formData,
+    });
+
+    const json = await res.json();
+    if (!json.success) {
+      throw new Error(json.message || "Gagal mengimpor data");
+    }
+
+    // Tampilkan ringkasan hasil
+    const d = json.data || {};
+    $("bulk-result-text").innerHTML = `
+      <strong>${json.message}</strong><br>
+      Total baris: ${d.total_baris || 0} • Berhasil: <span style="color:#10b981;font-weight:700">${d.berhasil || 0}</span> • Dilewati: ${d.dilewati || 0}
+    `;
+
+    const errUl = $("bulk-result-errors");
+    errUl.innerHTML = "";
+    if (d.catatan_error && d.catatan_error.length > 0) {
+      d.catatan_error.forEach((msg) => {
+        const li = document.createElement("li");
+        li.textContent = msg;
+        errUl.appendChild(li);
+      });
+    }
+
+    $("bulk-result").classList.remove("hidden");
+    showToast(`Berhasil mengimpor ${d.berhasil || 0} kajian!`);
+    loadList(); // Refresh dashboard
+  } catch (err) {
+    $("bulk-err-text").textContent = err.message;
+    $("bulk-err").classList.remove("hidden");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fa-solid fa-upload"></i> Mulai Impor Data`;
   }
 });
 
