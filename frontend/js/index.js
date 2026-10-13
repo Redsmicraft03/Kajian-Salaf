@@ -148,11 +148,22 @@ async function loadFeatured() {
     $("featured").classList.remove("hidden");
     $("f-judul").textContent = k.judul;
     
+    const lokasiParts = [k.tempat, k.kota].filter(Boolean);
+    const lokasiTeks = lokasiParts.map(esc).join(" • ");
+
     const metaParts = [];
-    if (k.ustadz) metaParts.push(`<i class="fa-solid fa-user-tie"></i> ${esc(k.ustadz)}`);
-    metaParts.push(`<i class="fa-regular fa-clock"></i> ${formatTanggal(k.waktu_mulai)}`);
-    if (k.tempat) metaParts.push(`<i class="fa-solid fa-location-dot"></i> ${esc(k.tempat)}`);
-    $("f-meta").innerHTML = metaParts.join(' <span style="opacity:0.4">•</span> ');
+    if (k.ustadz) {
+      metaParts.push(`<span class="f-meta-item"><i class="fa-solid fa-user-tie"></i> <span>${esc(k.ustadz)}</span></span>`);
+    }
+    metaParts.push(`<span class="f-meta-item"><i class="fa-regular fa-clock"></i> <span>${formatTanggal(k.waktu_mulai)}</span></span>`);
+    if (lokasiTeks) {
+      if (k.map_url) {
+        metaParts.push(`<span class="f-meta-item"><i class="fa-solid fa-location-dot"></i> <a href="${esc(k.map_url)}" target="_blank" rel="noopener" class="f-meta-link" title="Buka Google Maps">${lokasiTeks}</a></span>`);
+      } else {
+        metaParts.push(`<span class="f-meta-item"><i class="fa-solid fa-location-dot"></i> <span>${lokasiTeks}</span></span>`);
+      }
+    }
+    $("f-meta").innerHTML = metaParts.join('<span class="f-meta-sep">•</span>');
 
     $("f-judul").style.cursor = "pointer";
     $("f-judul").onclick = () => (window.location = `detail.html?id=${id}`);

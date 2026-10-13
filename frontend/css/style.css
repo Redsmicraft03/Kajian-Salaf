@@ -504,6 +504,38 @@ main {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  line-height: 1.5;
+}
+
+.f-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: normal;
+}
+
+.f-meta-item i {
+  color: var(--primary);
+  flex-shrink: 0;
+  font-size: 0.88rem;
+}
+
+.f-meta-sep {
+  opacity: 0.35;
+  margin: 0 2px;
+}
+
+.f-meta-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--primary-border);
+  text-underline-offset: 3px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.f-meta-link:hover {
+  color: var(--primary);
+  text-decoration-color: var(--primary);
 }
 
 .countdown {
