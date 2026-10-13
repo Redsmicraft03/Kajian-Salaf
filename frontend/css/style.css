@@ -2491,6 +2491,288 @@ input#remember-me {
   line-height: 1 !important;
 }
 
+/* ================= Public Ajukan Kajian Buttons ================= */
+.nav-action-btn {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border: 1.5px solid var(--primary-border);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.nav-action-btn:hover {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px var(--primary-glow);
+  transform: translateY(-1px);
+}
+
+.hero-ajukan {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: 1.5px dashed rgba(255, 255, 255, 0.45) !important;
+  color: #ffffff !important;
+}
+
+.hero-ajukan:hover {
+  background: rgba(255, 255, 255, 0.22) !important;
+  border-color: #ffffff !important;
+}
+
+.modal-ajukan-card {
+  max-width: 560px;
+}
+
+.form-section-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary-light);
+  padding: 8px 0 4px;
+  border-bottom: 1.5px dashed var(--border);
+  margin-top: 6px;
+}
+
+/* ================= Admin Tab Switcher ================= */
+.admin-tab-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1.5px solid var(--border);
+  padding-bottom: 10px;
+}
+
+.admin-tab-btn {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.admin-tab-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--text);
+}
+
+.admin-tab-btn.active {
+  background: var(--primary-soft);
+  color: var(--primary);
+  box-shadow: inset 0 0 0 1.5px var(--primary-border);
+}
+
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-subtle);
+  color: var(--text-subtle);
+  border: 1px solid var(--border);
+  font-size: 0.72rem;
+  font-weight: 800;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 9999px;
+  line-height: 1;
+}
+
+.tab-badge.has-pending {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35);
+  animation: pulseBadge 2s infinite;
+}
+
+@keyframes pulseBadge {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* ================= Pengajuan Cards Grid ================= */
+.pengajuan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.pengajuan-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: all 0.2s ease;
+}
+
+.pengajuan-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-border);
+}
+
+.pengajuan-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pengajuan-badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pengajuan-tgl {
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pengusul-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+}
+
+.pengusul-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.pengusul-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pengusul-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pengusul-email {
+  font-size: 0.76rem;
+  color: var(--primary-light);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pengusul-email:hover {
+  text-decoration: underline;
+}
+
+.pengajuan-kajian-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.pengajuan-title {
+  font-size: 1.12rem;
+  font-weight: 800;
+  line-height: 1.35;
+  color: var(--text);
+  margin: 0;
+}
+
+.pengajuan-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.pengusul-catatan {
+  background: var(--bg-subtle);
+  border-left: 3px solid var(--primary-light);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.pengusul-catatan strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text);
+  font-size: 0.75rem;
+}
+
+.pengusul-catatan p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.pengusul-catatan.alasan-tolak {
+  border-left-color: #dc2626;
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+}
+
+.pengajuan-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-light);
+  flex-wrap: wrap;
+}
+
 /* =========================================================
    MOBILE COMFORT & RESPONSIVENESS SUITE (SMARTPHONE UI/UX)
    Optimized for iOS, Android, Narrow Screens (320px - 768px)
@@ -2940,6 +3222,61 @@ input#remember-me {
     text-align: center;
     font-size: 0.82rem;
   }
+
+  /* ================= Pengajuan & Usulan Jamaah Mobile ================= */
+  .admin-tab-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    white-space: nowrap;
+    gap: 8px;
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+  }
+  .admin-tab-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .admin-tab-btn {
+    padding: 8px 14px;
+    font-size: 0.88rem;
+    flex-shrink: 0;
+  }
+  .pengajuan-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .pengajuan-card {
+    padding: 16px 14px;
+    gap: 12px;
+  }
+  .pengajuan-card-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .pengajuan-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .pengajuan-actions .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+  }
+  .pengajuan-actions .btn-hapus-pengajuan {
+    margin-left: 0 !important;
+    margin-top: 4px;
+    border: 1px dashed var(--border);
+  }
+  .nav-action-btn span {
+    display: none;
+  }
+  .nav-action-btn {
+    padding: 7px 11px;
+  }
 }
+
 
 

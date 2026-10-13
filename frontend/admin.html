@@ -109,101 +109,196 @@
 
   <!-- Main Content Container -->
   <main class="container">
-    
-    <!-- 5 Clickable Metric/Stat Cards -->
-    <div class="stat-grid">
-      <div class="stat-card active" data-filter="semua" title="Klik untuk menampilkan semua kajian">
-        <div class="stat-icon total">
-          <i class="fa-solid fa-layer-group"></i>
+
+    <!-- Tab Switcher: Kelola Jadwal vs Usulan Jamaah -->
+    <div class="admin-tab-nav">
+      <button class="admin-tab-btn active" id="tab-btn-jadwal" type="button">
+        <i class="fa-solid fa-calendar-days"></i> Kelola Jadwal Kajian
+      </button>
+      <button class="admin-tab-btn" id="tab-btn-pengajuan" type="button">
+        <i class="fa-solid fa-inbox"></i> Usulan Jamaah
+        <span class="tab-badge" id="tab-badge-pengajuan">0</span>
+      </button>
+    </div>
+
+    <!-- VIEW 1: KELOLA JADWAL KAJIAN -->
+    <div id="view-jadwal">
+      <!-- 5 Clickable Metric/Stat Cards -->
+      <div class="stat-grid">
+        <div class="stat-card active" data-filter="semua" title="Klik untuk menampilkan semua kajian">
+          <div class="stat-icon total">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-num" id="stat-total">0</span>
+            <span class="stat-label">Total Kajian</span>
+          </div>
         </div>
-        <div class="stat-info">
-          <span class="stat-num" id="stat-total">0</span>
-          <span class="stat-label">Total Kajian</span>
+
+        <div class="stat-card" data-filter="baru" title="Klik untuk melihat kajian yang baru ditambahkan">
+          <div class="stat-icon baru">
+            <i class="fa-solid fa-circle-plus"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-num" id="stat-baru">0</span>
+            <span class="stat-label">Baru Ditambahkan</span>
+          </div>
+        </div>
+
+        <div class="stat-card" data-filter="pekan_ini" title="Klik untuk menyaring kajian pekan ini">
+          <div class="stat-icon pekan">
+            <i class="fa-regular fa-calendar-check"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-num" id="stat-pekan">0</span>
+            <span class="stat-label">Pekan Ini</span>
+          </div>
+        </div>
+
+        <div class="stat-card" data-filter="mendatang" title="Klik untuk menyaring kajian yang akan datang">
+          <div class="stat-icon mendatang">
+            <i class="fa-regular fa-clock"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-num" id="stat-mendatang">0</span>
+            <span class="stat-label">Akan Datang</span>
+          </div>
+        </div>
+
+        <div class="stat-card" data-filter="lewat" title="Klik untuk menyaring kajian yang sudah lewat">
+          <div class="stat-icon lewat">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-num" id="stat-lewat">0</span>
+            <span class="stat-label">Sudah Lewat</span>
+          </div>
         </div>
       </div>
 
-      <div class="stat-card" data-filter="baru" title="Klik untuk melihat kajian yang baru ditambahkan">
-        <div class="stat-icon baru">
-          <i class="fa-solid fa-circle-plus"></i>
+      <!-- Search & Filter Bar -->
+      <div class="admin-toolbar">
+        <div class="admin-search-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="admin-search" placeholder="Cari judul materi, nama ustadz, masjid, atau kota...">
         </div>
-        <div class="stat-info">
-          <span class="stat-num" id="stat-baru">0</span>
-          <span class="stat-label">Baru Ditambahkan</span>
+
+        <div class="admin-filter-chips">
+          <button class="chip active" data-waktu="semua">
+            <i class="fa-solid fa-layer-group"></i> Semua (<span id="chip-total">0</span>)
+          </button>
+          <button class="chip" data-waktu="baru">
+            <i class="fa-solid fa-circle-plus"></i> Baru Ditambahkan (<span id="chip-baru">0</span>)
+          </button>
+          <button class="chip" data-waktu="pekan_ini">
+            <i class="fa-regular fa-calendar-check"></i> Pekan Ini (<span id="chip-pekan">0</span>)
+          </button>
+          <button class="chip" data-waktu="mendatang">
+            <i class="fa-regular fa-clock"></i> Akan Datang (<span id="chip-mendatang">0</span>)
+          </button>
+          <button class="chip" data-waktu="lewat">
+            <i class="fa-solid fa-clock-rotate-left"></i> Sudah Lewat (<span id="chip-lewat">0</span>)
+          </button>
         </div>
       </div>
 
-      <div class="stat-card" data-filter="pekan_ini" title="Klik untuk menyaring kajian pekan ini">
-        <div class="stat-icon pekan">
-          <i class="fa-regular fa-calendar-check"></i>
-        </div>
-        <div class="stat-info">
-          <span class="stat-num" id="stat-pekan">0</span>
-          <span class="stat-label">Pekan Ini</span>
-        </div>
+      <!-- Cards Grid Display (Mirip Halaman Utama) -->
+      <div id="admin-grid" class="grid"></div>
+
+      <!-- Empty State -->
+      <div id="admin-empty" class="empty-state hidden">
+        <i class="fa-solid fa-calendar-xmark"></i>
+        <h3>Tidak Ada Data Kajian</h3>
+        <p id="admin-empty-text">Belum ada data kajian untuk kriteria filter ini.</p>
       </div>
 
-      <div class="stat-card" data-filter="mendatang" title="Klik untuk menyaring kajian yang akan datang">
-        <div class="stat-icon mendatang">
-          <i class="fa-regular fa-clock"></i>
-        </div>
-        <div class="stat-info">
-          <span class="stat-num" id="stat-mendatang">0</span>
-          <span class="stat-label">Akan Datang</span>
-        </div>
-      </div>
-
-      <div class="stat-card" data-filter="lewat" title="Klik untuk menyaring kajian yang sudah lewat">
-        <div class="stat-icon lewat">
-          <i class="fa-solid fa-clock-rotate-left"></i>
-        </div>
-        <div class="stat-info">
-          <span class="stat-num" id="stat-lewat">0</span>
-          <span class="stat-label">Sudah Lewat</span>
-        </div>
+      <!-- Error State -->
+      <div id="admin-error" class="empty-state hidden" style="border-color:#fca5a5;">
+        <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444"></i>
+        <h3 style="color:#dc2626">Gagal Memuat Data</h3>
+        <p id="admin-error-text">Terjadi kesalahan jaringan atau sesi login telah berakhir.</p>
       </div>
     </div>
 
-    <!-- Search & Filter Bar -->
-    <div class="admin-toolbar">
-      <div class="admin-search-wrap">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="admin-search" placeholder="Cari judul materi, nama ustadz, masjid, atau kota...">
+    <!-- VIEW 2: USULAN KAJIAN DARI JAMAAH -->
+    <div id="view-pengajuan" class="hidden">
+      <!-- 4 Stat Cards untuk Usulan -->
+      <div class="stat-grid">
+        <div class="stat-card active" data-p-stat="menunggu" title="Klik untuk menampilkan usulan yang menunggu review">
+          <div class="stat-icon" style="background:rgba(234,179,8,0.15);color:#ca8a04;">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-num" id="p-stat-menunggu">0</span>
+            <span class="stat-label">Menunggu Review</span>
+          </div>
+        </div>
+
+        <div class="stat-card" data-p-stat="disetujui" title="Klik untuk menampilkan usulan yang telah disetujui">
+          <div class="stat-icon" style="background:rgba(16,185,129,0.15);color:#059669;">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-num" id="p-stat-disetujui">0</span>
+            <span class="stat-label">Telah Disetujui</span>
+          </div>
+        </div>
+
+        <div class="stat-card" data-p-stat="ditolak" title="Klik untuk menampilkan usulan yang ditolak">
+          <div class="stat-icon" style="background:rgba(239,68,68,0.15);color:#dc2626;">
+            <i class="fa-solid fa-circle-xmark"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-num" id="p-stat-ditolak">0</span>
+            <span class="stat-label">Ditolak</span>
+          </div>
+        </div>
+
+        <div class="stat-card" data-p-stat="semua" title="Klik untuk menampilkan semua riwayat usulan">
+          <div class="stat-icon" style="background:rgba(99,102,241,0.15);color:#4f46e5;">
+            <i class="fa-solid fa-inbox"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-num" id="p-stat-total">0</span>
+            <span class="stat-label">Total Usulan</span>
+          </div>
+        </div>
       </div>
 
-      <div class="admin-filter-chips">
-        <button class="chip active" data-waktu="semua">
-          <i class="fa-solid fa-layer-group"></i> Semua (<span id="chip-total">0</span>)
-        </button>
-        <button class="chip" data-waktu="baru">
-          <i class="fa-solid fa-circle-plus"></i> Baru Ditambahkan (<span id="chip-baru">0</span>)
-        </button>
-        <button class="chip" data-waktu="pekan_ini">
-          <i class="fa-regular fa-calendar-check"></i> Pekan Ini (<span id="chip-pekan">0</span>)
-        </button>
-        <button class="chip" data-waktu="mendatang">
-          <i class="fa-regular fa-clock"></i> Akan Datang (<span id="chip-mendatang">0</span>)
-        </button>
-        <button class="chip" data-waktu="lewat">
-          <i class="fa-solid fa-clock-rotate-left"></i> Sudah Lewat (<span id="chip-lewat">0</span>)
-        </button>
+      <!-- Filter chips pengajuan -->
+      <div class="admin-toolbar">
+        <div class="admin-filter-chips">
+          <button class="chip active" data-p-waktu="menunggu">
+            <i class="fa-solid fa-hourglass-half"></i> Menunggu Review (<span id="p-chip-menunggu">0</span>)
+          </button>
+          <button class="chip" data-p-waktu="disetujui">
+            <i class="fa-solid fa-circle-check"></i> Disetujui (<span id="p-chip-disetujui">0</span>)
+          </button>
+          <button class="chip" data-p-waktu="ditolak">
+            <i class="fa-solid fa-circle-xmark"></i> Ditolak (<span id="p-chip-ditolak">0</span>)
+          </button>
+          <button class="chip" data-p-waktu="semua">
+            <i class="fa-solid fa-layer-group"></i> Semua (<span id="p-chip-total">0</span>)
+          </button>
+        </div>
       </div>
-    </div>
 
-    <!-- Cards Grid Display (Mirip Halaman Utama) -->
-    <div id="admin-grid" class="grid"></div>
+      <!-- Grid Cards Pengajuan -->
+      <div id="admin-pengajuan-grid" class="pengajuan-grid"></div>
 
-    <!-- Empty State -->
-    <div id="admin-empty" class="empty-state hidden">
-      <i class="fa-solid fa-calendar-xmark"></i>
-      <h3>Tidak Ada Data Kajian</h3>
-      <p id="admin-empty-text">Belum ada data kajian untuk kriteria filter ini.</p>
-    </div>
+      <!-- Empty State Pengajuan -->
+      <div id="admin-pengajuan-empty" class="empty-state hidden">
+        <i class="fa-solid fa-inbox"></i>
+        <h3>Tidak Ada Usulan Kajian</h3>
+        <p id="admin-pengajuan-empty-text">Belum ada usulan kajian dari jamaah pada kriteria filter ini.</p>
+      </div>
 
-    <!-- Error State -->
-    <div id="admin-error" class="empty-state hidden" style="border-color:#fca5a5;">
-      <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444"></i>
-      <h3 style="color:#dc2626">Gagal Memuat Data</h3>
-      <p id="admin-error-text">Terjadi kesalahan jaringan atau sesi login telah berakhir.</p>
+      <!-- Error State Pengajuan -->
+      <div id="admin-pengajuan-error" class="empty-state hidden" style="border-color:#fca5a5;">
+        <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444"></i>
+        <h3 style="color:#dc2626">Gagal Memuat Data Usulan</h3>
+        <p id="admin-pengajuan-error-text">Terjadi kendala saat menghubungkan ke server.</p>
+      </div>
     </div>
 
   </main>
@@ -329,13 +424,17 @@
         </div>
 
         <label>
-          <span>Kota</span>
-          <input type="text" id="f-kota" placeholder="cth: Jakarta / Bekasi / Surabaya">
+          <span>Provinsi</span>
+          <select id="f-provinsi">
+            <option value="">-- Pilih Provinsi --</option>
+          </select>
         </label>
 
         <label>
-          <span>Provinsi</span>
-          <input type="text" id="f-provinsi" placeholder="cth: Jawa Barat / DKI Jakarta">
+          <span>Kota / Kabupaten</span>
+          <select id="f-kota">
+            <option value="">-- Pilih Provinsi Terlebih Dahulu --</option>
+          </select>
         </label>
 
         <label class="full">
@@ -498,6 +597,62 @@
   </div>
 </div>
 
+<!-- Modal Konfirmasi Setujui Usulan -->
+<div id="modal-approve-pengajuan" class="form-modal hidden" role="dialog" aria-modal="true">
+  <div class="form-modal-card" style="max-width: 480px; text-align: center; padding: 32px 24px;">
+    <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); color: #059669; display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 16px;">
+      <i class="fa-solid fa-check"></i>
+    </div>
+    
+    <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 8px;">Setujui Usulan Kajian?</h2>
+    
+    <p id="approve-kajian-desc" style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 16px; line-height: 1.5;">
+      Jadwal kajian ini akan langsung diterbitkan ke halaman publik dan sistem akan mengirimkan email konfirmasi ke pengusul.
+    </p>
+
+    <div id="approve-detail-box" style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; text-align: left; margin-bottom: 20px; font-size: 0.88rem;"></div>
+
+    <div style="display: flex; gap: 12px; justify-content: center;">
+      <button type="button" id="btn-batal-approve" class="btn btn-ghost" style="flex: 1;">
+        <i class="fa-solid fa-xmark"></i> Batal
+      </button>
+      <button type="button" id="btn-konfirmasi-approve" class="btn btn-success" style="flex: 1; background:#059669; border-color:#059669; color:#fff;">
+        <i class="fa-solid fa-check"></i> Ya, Setujui & Terbitkan
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Penolakan Usulan -->
+<div id="modal-reject-pengajuan" class="form-modal hidden" role="dialog" aria-modal="true">
+  <div class="form-modal-card" style="max-width: 480px; padding: 28px 24px;">
+    <div class="form-modal-header">
+      <h2 style="color:#dc2626;"><i class="fa-solid fa-circle-xmark"></i> Tolak Usulan Kajian</h2>
+      <button class="modal-close" id="btn-close-reject" aria-label="Tutup form">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    
+    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px; line-height: 1.5;">
+      Pengusul akan menerima email pemberitahuan mengenai penolakan usulan kajian ini beserta alasannya.
+    </p>
+
+    <label style="display:block; margin-bottom: 18px;">
+      <span style="display:block; font-weight:700; font-size:0.85rem; margin-bottom:6px;">Alasan Penolakan (akan dikirim ke email pengusul):</span>
+      <textarea id="reject-alasan-input" rows="3" placeholder="cth: Mohon maaf, informasi tempat belum spesifik / data materi belum sesuai ketentuan..." style="width:100%; font-size:0.92rem;"></textarea>
+    </label>
+
+    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+      <button type="button" id="btn-batal-reject" class="btn btn-ghost">
+        <i class="fa-solid fa-xmark"></i> Batal
+      </button>
+      <button type="button" id="btn-konfirmasi-reject" class="btn btn-danger">
+        <i class="fa-solid fa-paper-plane"></i> Kirim Penolakan
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast Notification -->
 <div id="toast" class="toast toast-success">
   <i class="fa-solid fa-circle-check"></i>
@@ -517,8 +672,8 @@
   </div>
 </footer>
 
-<script src="js/config.js?v=8"></script>
-<script src="js/theme.js?v=8"></script>
-<script src="js/admin.js?v=8"></script>
+<script src="js/config.js?v=10"></script>
+<script src="js/theme.js?v=10"></script>
+<script src="js/admin.js?v=10"></script>
 </body>
 </html>

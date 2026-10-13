@@ -28,6 +28,9 @@
     </a>
     
     <div class="nav-actions">
+      <button class="nav-action-btn" id="btn-ajukan-kajian" title="Ajukan Jadwal Kajian Baru di Kotamu">
+        <i class="fa-solid fa-paper-plane"></i> <span>Ajukan Kajian</span>
+      </button>
       <button class="theme-toggle" id="theme-toggle" title="Ganti mode tema" aria-label="Ganti mode tema">
         <i class="fa-solid fa-moon"></i>
       </button>
@@ -49,6 +52,9 @@
       </a>
       <button class="hero-city" id="hero-kota">
         <i class="fa-solid fa-location-dot"></i> <span id="hero-kota-nama">Pilih kota</span>
+      </button>
+      <button class="hero-city hero-ajukan" id="btn-hero-ajukan" title="Ingin ada kajian di kotamu? Ajukan di sini">
+        <i class="fa-solid fa-paper-plane"></i> <span>Ajukan Kajian</span>
       </button>
     </div>
   </div>
@@ -224,8 +230,130 @@
   </div>
 </div>
 
-<script src="js/config.js?v=9"></script>
-<script src="js/theme.js?v=9"></script>
-<script src="js/index.js?v=9"></script>
+<!-- Modal Ajukan Jadwal Kajian (User Submission) -->
+<div id="modal-ajukan" class="modal form-modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-card form-modal-card modal-ajukan-card">
+    <div class="form-modal-header">
+      <h2><i class="fa-solid fa-paper-plane" style="color:var(--primary)"></i> Ajukan Jadwal Kajian</h2>
+      <button class="modal-close" id="modal-ajukan-tutup" aria-label="Tutup modal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <p class="form-modal-subtitle">Bantu ikhwah di kotamu mengetahui jadwal kajian sunnah. Usulan Anda akan ditinjau oleh Admin sebelum diterbitkan.</p>
+
+    <!-- Alert Notifikasi / Error -->
+    <div id="ajukan-err" class="form-alert hidden">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span id="ajukan-err-text">Terjadi kesalahan.</span>
+    </div>
+
+    <form id="form-ajukan" class="form-grid">
+      <!-- Pengusul Section -->
+      <div class="form-section-divider full">
+        <i class="fa-solid fa-user"></i> Data Pengusul
+      </div>
+
+      <label>
+        <span>Nama Anda *</span>
+        <input type="text" id="ajukan-nama" placeholder="cth: Abdullah / Fulan" required>
+      </label>
+
+      <label>
+        <span>Email Anda (untuk notifikasi status) *</span>
+        <input type="email" id="ajukan-email" placeholder="nama@email.com" required>
+      </label>
+
+      <!-- Kajian Section -->
+      <div class="form-section-divider full">
+        <i class="fa-solid fa-book-quran"></i> Detail Kajian
+      </div>
+
+      <label class="full">
+        <span>Judul / Tema Kajian *</span>
+        <input type="text" id="ajukan-judul" placeholder="cth: Pembahasan Kitab Tauhid Bab 1" required>
+      </label>
+
+      <label class="full">
+        <span>Pemateri / Ustadz *</span>
+        <input type="text" id="ajukan-ustadz" placeholder="cth: Ustadz Dr. Firanda Andirja, M.A." required>
+      </label>
+
+      <label>
+        <span>Tanggal Kajian *</span>
+        <input type="date" id="ajukan-tanggal" required>
+      </label>
+
+      <label>
+        <span>Waktu / Jam Mulai *</span>
+        <input type="time" id="ajukan-jam" value="18:30" required>
+      </label>
+
+      <label>
+        <span>Provinsi *</span>
+        <select id="ajukan-provinsi" required>
+          <option value="">-- Pilih Provinsi --</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Kota / Kabupaten *</span>
+        <select id="ajukan-kota" required>
+          <option value="">-- Pilih Provinsi Terlebih Dahulu --</option>
+        </select>
+      </label>
+
+      <label class="full">
+        <span>Nama Tempat / Masjid *</span>
+        <input type="text" id="ajukan-tempat" placeholder="cth: Masjid Nurul Iman, Blok M Square Lt. 7" required>
+      </label>
+
+      <label class="full">
+        <span>Link Google Maps (Opsional)</span>
+        <input type="url" id="ajukan-map" placeholder="https://maps.google.com/?q=...">
+      </label>
+
+      <label class="full">
+        <span>Link Gambar Poster (Opsional)</span>
+        <input type="url" id="ajukan-poster" placeholder="https://i.postimg.cc/... / https://...">
+      </label>
+
+      <label>
+        <span>Sasaran Jamaah</span>
+        <select id="ajukan-untuk">
+          <option value="umum">Umum (Ikhwan & Akhwat)</option>
+          <option value="ikhwan">Khusus Ikhwan</option>
+          <option value="akhwat">Khusus Akhwat</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Link Live Streaming (Opsional)</span>
+        <input type="url" id="ajukan-live" placeholder="https://youtube.com/live/...">
+      </label>
+
+      <label class="full">
+        <span>Catatan Tambahan untuk Admin (Opsional)</span>
+        <textarea id="ajukan-catatan" rows="2" placeholder="cth: Info valid dari pengurus masjid, diadakan rutin tiap sabtu malam..."></textarea>
+      </label>
+
+      <div class="form-grid-actions full">
+        <button type="button" class="btn btn-ghost" id="btn-ajukan-batal">Batal</button>
+        <button type="submit" class="btn" id="btn-ajukan-submit">
+          <i class="fa-solid fa-paper-plane"></i> Kirim Usulan Kajian
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast Notifikasi di Beranda -->
+<div id="toast" class="toast toast-success">
+  <i class="fa-solid fa-circle-check"></i>
+  <span id="toast-text">Berhasil!</span>
+</div>
+
+<script src="js/config.js?v=11"></script>
+<script src="js/theme.js?v=11"></script>
+<script src="js/index.js?v=11"></script>
 </body>
 </html>

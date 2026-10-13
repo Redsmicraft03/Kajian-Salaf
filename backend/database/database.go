@@ -38,6 +38,7 @@ func InitDatabase() {
 	err = DB.AutoMigrate(
 		&model.User{},
 		&model.Kajian{},
+		&model.PengajuanKajian{},
 	)
 
 	if err != nil {
@@ -46,8 +47,35 @@ func InitDatabase() {
 
 	log.Println("Berhasil terhubung ke database")
 
+	// Pastikan data kota & provinsi eksisting di DB seragam baku
+	NormalizeExistingWilayah()
+
 	// Jalankan scheduler auto-update status kajian
 	StartStatusScheduler()
+}
+
+// NormalizeExistingWilayah memeriksa dan merapikan kota & provinsi data lama jika ada inkonsistensi
+func NormalizeExistingWilayah() {
+	if DB == nil {
+		return
+	}
+	var kajians []model.Kajian
+	err := DB.Select("id, kota, provinsi").Find(&kajians).Error
+	if err != nil {
+		return
+	}
+	for _, k := range kajians {
+		if k.Kota == "" && k.Provinsi == "" {
+			continue
+		}
+		normKota, normProv := NormalizeWilayah(k.Kota, k.Provinsi)
+		if normKota != k.Kota || normProv != k.Provinsi {
+			DB.Model(&model.Kajian{}).Where("id = ?", k.ID).Updates(map[string]interface{}{
+				"kota":     normKota,
+				"provinsi": normProv,
+			})
+		}
+	}
 }
 
 // AutoUpdateStatusKajian memperbarui status kajian dari 'upcoming' menjadi 'selesai'

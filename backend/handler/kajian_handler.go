@@ -65,6 +65,9 @@ func CreateKajian(c fiber.Ctx) error {
 		})
 	}
 
+	// Normalisasi kota & provinsi ke format master baku
+	kajianReq.Kota, kajianReq.Provinsi = database.NormalizeWilayah(kajianReq.Kota, kajianReq.Provinsi)
+
 	kajian.Judul = kajianReq.Judul
 	kajian.Ustadz = kajianReq.Ustadz
 	kajian.WaktuMulai = kajianReq.WaktuMulai
@@ -220,6 +223,14 @@ func GetLokasi(c fiber.Ctx) error {
 	})
 }
 
+// GetMasterWilayah mengembalikan daftar master resmi 38 provinsi beserta kota/kabupaten di Indonesia
+func GetMasterWilayah(c fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(model.APIResponse{
+		Success: true,
+		Data:    database.DaftarWilayahMaster,
+	})
+}
+
 func UpdateKajian(c fiber.Ctx) error {
 	id := c.Params("id")
 
@@ -247,7 +258,9 @@ func UpdateKajian(c fiber.Ctx) error {
 		})
 	}
 
-	// 3. Timpa field-nya
+	// 3. Normalisasi dan timpa field-nya
+	req.Kota, req.Provinsi = database.NormalizeWilayah(req.Kota, req.Provinsi)
+
 	kajian.Judul = req.Judul
 	kajian.Ustadz = req.Ustadz
 	kajian.WaktuMulai = req.WaktuMulai
@@ -501,6 +514,9 @@ func BulkCreateKajian(c fiber.Ctx) error {
 		tempat := getCol(row, "tempat", "nama tempat / masjid", "masjid", "lokasi")
 		kota := getCol(row, "kota")
 		provinsi := getCol(row, "provinsi")
+
+		// Normalisasi kota & provinsi ke format master baku
+		kota, provinsi = database.NormalizeWilayah(kota, provinsi)
 		untuk := strings.ToLower(getCol(row, "untuk", "sasaran", "sasaran (umum/ikhwan/akhwat)", "jamaah"))
 		mapUrl := getCol(row, "map url", "map", "maps", "link google maps", "link maps")
 		posterUrl := getCol(row, "poster url", "poster", "link poster", "link gambar poster")

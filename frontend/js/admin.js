@@ -176,7 +176,9 @@ function showApp() {
   if (window.location.pathname !== "/v1/admin" && window.location.pathname !== "/admin") {
     window.history.replaceState(null, "", "/v1/admin");
   }
+  loadMasterWilayah();
   loadList();
+  loadPengajuanBadge();
 }
 
 /* ================= Data Loading & Stats Calculation ================= */
@@ -551,9 +553,84 @@ function updateDateTimePreview() {
   previewBox.classList.add("hidden");
 }
 
+/* ================= Master Wilayah Cascading Dropdowns ================= */
+let masterWilayahData = [];
+
+async function loadMasterWilayah() {
+  if (masterWilayahData.length > 0) return;
+  try {
+    const res = await fetch(`${API_BASE}/master-wilayah`);
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data)) {
+      masterWilayahData = json.data;
+      renderProvinsiOptions();
+    }
+  } catch (e) {
+    console.error("Gagal memuat master wilayah:", e);
+  }
+}
+
+function renderProvinsiOptions() {
+  const provEl = $("f-provinsi");
+  if (!provEl) return;
+  const curVal = provEl.value;
+  provEl.innerHTML = `<option value="">-- Pilih Provinsi --</option>`;
+  masterWilayahData.forEach((p) => {
+    const opt = document.createElement("option");
+    opt.value = p.nama;
+    opt.textContent = p.nama;
+    provEl.appendChild(opt);
+  });
+  if (curVal) provEl.value = curVal;
+}
+
+function populateKotaOptions(provinsiNama, selectedKota = "") {
+  const kotaEl = $("f-kota");
+  if (!kotaEl) return;
+  kotaEl.innerHTML = "";
+
+  if (!provinsiNama) {
+    kotaEl.innerHTML = `<option value="">-- Pilih Provinsi Terlebih Dahulu --</option>`;
+    return;
+  }
+
+  const prov = masterWilayahData.find((p) => p.nama.toLowerCase() === provinsiNama.toLowerCase());
+  kotaEl.innerHTML = `<option value="">-- Pilih Kota / Kabupaten --</option>`;
+
+  if (prov && Array.isArray(prov.kota)) {
+    prov.kota.forEach((k) => {
+      const opt = document.createElement("option");
+      opt.value = k;
+      opt.textContent = k;
+      kotaEl.appendChild(opt);
+    });
+  }
+
+  if (selectedKota) {
+    const exists = Array.from(kotaEl.options).some((o) => o.value.toLowerCase() === selectedKota.toLowerCase());
+    if (!exists) {
+      const customOpt = document.createElement("option");
+      customOpt.value = selectedKota;
+      customOpt.textContent = selectedKota;
+      kotaEl.appendChild(customOpt);
+    }
+    kotaEl.value = selectedKota;
+  }
+}
+
+const provSelect = $("f-provinsi");
+if (provSelect) {
+  provSelect.addEventListener("change", () => {
+    populateKotaOptions(provSelect.value, "");
+  });
+}
+
 function bukaModalTambah() {
   $("form-kajian").reset();
   $("f-id").value = "";
+
+  // Reset dropdown wilayah
+  populateKotaOptions("", "");
 
   // Set default ke hari ini dan jam 18:30 (Ba'da Maghrib)
   const now = new Date();
@@ -567,7 +644,7 @@ function bukaModalTambah() {
   setTimeout(() => $("f-judul").focus(), 80);
 }
 
-function bukaModalEdit(k) {
+async function bukaModalEdit(k) {
   const id = k.id || k.ID;
   $("f-id").value = id;
   $("f-judul").value = k.judul || "";
@@ -582,8 +659,13 @@ function bukaModalEdit(k) {
     updateDateTimePreview();
   }
 
-  $("f-kota").value = k.kota || "";
+  if (!masterWilayahData.length) {
+    await loadMasterWilayah();
+  }
+
   $("f-provinsi").value = k.provinsi || "";
+  populateKotaOptions(k.provinsi || "", k.kota || "");
+
   $("f-tempat").value = k.tempat || "";
   $("f-map").value = k.map_url || "";
   $("f-poster").value = k.poster_url || "";
@@ -910,6 +992,383 @@ $("btn-upload-bulk").addEventListener("click", async () => {
     btn.innerHTML = `<i class="fa-solid fa-upload"></i> Mulai Impor Data`;
   }
 });
+
+/* ================= Tab Switcher: Jadwal vs Pengajuan ================= */
+let activeAdminTab = "jadwal";
+let pStatusActive = "menunggu";
+let pengajuanDataList = [];
+let targetPengajuan = null;
+
+const tabBtnJadwal = $("tab-btn-jadwal");
+const tabBtnPengajuan = $("tab-btn-pengajuan");
+const viewJadwal = $("view-jadwal");
+const viewPengajuan = $("view-pengajuan");
+
+function switchAdminTab(tabName) {
+  activeAdminTab = tabName;
+  if (tabName === "jadwal") {
+    if (tabBtnJadwal) tabBtnJadwal.classList.add("active");
+    if (tabBtnPengajuan) tabBtnPengajuan.classList.remove("active");
+    if (viewJadwal) viewJadwal.classList.remove("hidden");
+    if (viewPengajuan) viewPengajuan.classList.add("hidden");
+  } else {
+    if (tabBtnJadwal) tabBtnJadwal.classList.remove("active");
+    if (tabBtnPengajuan) tabBtnPengajuan.classList.add("active");
+    if (viewJadwal) viewJadwal.classList.add("hidden");
+    if (viewPengajuan) viewPengajuan.classList.remove("hidden");
+    loadPengajuanList();
+  }
+}
+
+if (tabBtnJadwal) tabBtnJadwal.addEventListener("click", () => switchAdminTab("jadwal"));
+if (tabBtnPengajuan) tabBtnPengajuan.addEventListener("click", () => switchAdminTab("pengajuan"));
+
+// Update badge pending usulan pada tab button
+async function loadPengajuanBadge() {
+  try {
+    const res = await fetch(`${API_BASE}/admin/pengajuan?status=menunggu&limit=1`, {
+      headers: authHeaders(),
+    });
+    const json = await res.json();
+    if (json.success && json.data && json.data.stats) {
+      const pendingCount = json.data.stats.menunggu || 0;
+      const badge = $("tab-badge-pengajuan");
+      if (badge) {
+        badge.textContent = pendingCount;
+        badge.classList.toggle("has-pending", pendingCount > 0);
+      }
+    }
+  } catch (e) {
+    /* silent */
+  }
+}
+
+/* ================= Pengajuan Jamaah Data & Moderation ================= */
+async function loadPengajuanList() {
+  const grid = $("admin-pengajuan-grid");
+  const emptyEl = $("admin-pengajuan-empty");
+  const errorEl = $("admin-pengajuan-error");
+
+  if (!grid) return;
+  grid.innerHTML = "";
+  if (emptyEl) emptyEl.classList.add("hidden");
+  if (errorEl) errorEl.classList.add("hidden");
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/pengajuan?status=${pStatusActive}&limit=50`, {
+      headers: authHeaders(),
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message || "Gagal memuat usulan");
+
+    const data = json.data?.data || [];
+    const stats = json.data?.stats || { menunggu: 0, disetujui: 0, ditolak: 0, total: 0 };
+    pengajuanDataList = data;
+
+    // Update stats counters
+    if ($("p-stat-menunggu")) $("p-stat-menunggu").textContent = stats.menunggu;
+    if ($("p-stat-disetujui")) $("p-stat-disetujui").textContent = stats.disetujui;
+    if ($("p-stat-ditolak")) $("p-stat-ditolak").textContent = stats.ditolak;
+    if ($("p-stat-total")) $("p-stat-total").textContent = stats.total;
+
+    if ($("p-chip-menunggu")) $("p-chip-menunggu").textContent = stats.menunggu;
+    if ($("p-chip-disetujui")) $("p-chip-disetujui").textContent = stats.disetujui;
+    if ($("p-chip-ditolak")) $("p-chip-ditolak").textContent = stats.ditolak;
+    if ($("p-chip-total")) $("p-chip-total").textContent = stats.total;
+
+    // Update tab badge
+    const badge = $("tab-badge-pengajuan");
+    if (badge) {
+      badge.textContent = stats.menunggu;
+      badge.classList.toggle("has-pending", stats.menunggu > 0);
+    }
+
+    if (data.length === 0) {
+      if (emptyEl) emptyEl.classList.remove("hidden");
+      return;
+    }
+
+    renderPengajuanCards(data);
+  } catch (err) {
+    if (errorEl) errorEl.classList.remove("hidden");
+  }
+}
+
+function renderPengajuanCards(items) {
+  const grid = $("admin-pengajuan-grid");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  items.forEach((p) => {
+    const id = p.ID || p.id;
+    const card = document.createElement("div");
+    card.className = "pengajuan-card";
+
+    let statusBadge = "";
+    if (p.status === "menunggu") {
+      statusBadge = `<span class="badge" style="background:rgba(234,179,8,0.15);color:#ca8a04;border:1px solid rgba(234,179,8,0.3)"><i class="fa-solid fa-hourglass-half"></i> Menunggu Review</span>`;
+    } else if (p.status === "disetujui") {
+      statusBadge = `<span class="badge" style="background:rgba(16,185,129,0.15);color:#059669;border:1px solid rgba(16,185,129,0.3)"><i class="fa-solid fa-circle-check"></i> Telah Disetujui</span>`;
+    } else {
+      statusBadge = `<span class="badge" style="background:rgba(239,68,68,0.15);color:#dc2626;border:1px solid rgba(239,68,68,0.3)"><i class="fa-solid fa-circle-xmark"></i> Ditolak</span>`;
+    }
+
+    const tglPengajuan = p.CreatedAt ? new Date(p.CreatedAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
+    const waktuKajian = p.waktu_mulai ? formatTanggal(p.waktu_mulai) : "-";
+    const lokasi = [p.tempat, p.kota, p.provinsi].filter(Boolean).map(esc).join(" • ");
+
+    let actionButtons = "";
+    if (p.status === "menunggu") {
+      actionButtons = `
+        <button type="button" class="btn btn-sm btn-approve" data-id="${id}" style="background:#059669;border-color:#059669;color:#ffffff;">
+          <i class="fa-solid fa-check"></i> Setujui & Terbitkan
+        </button>
+        <button type="button" class="btn btn-sm btn-ghost btn-reject" data-id="${id}" style="color:#dc2626;border-color:rgba(220,38,38,0.35);">
+          <i class="fa-solid fa-xmark"></i> Tolak
+        </button>
+      `;
+    } else if (p.status === "disetujui") {
+      actionButtons = `
+        <span style="font-size:0.85rem;font-weight:700;color:#059669;display:inline-flex;align-items:center;gap:6px;">
+          <i class="fa-solid fa-circle-check"></i> Diterbitkan di Jadwal
+        </span>
+      `;
+    } else {
+      actionButtons = `
+        <span style="font-size:0.85rem;font-weight:700;color:#dc2626;display:inline-flex;align-items:center;gap:6px;">
+          <i class="fa-solid fa-circle-xmark"></i> Ditolak
+        </span>
+      `;
+    }
+
+    actionButtons += `
+      <button type="button" class="btn btn-ghost btn-sm btn-hapus-pengajuan" data-id="${id}" title="Hapus arsip usulan ini" style="color:var(--text-subtle);margin-left:auto;">
+        <i class="fa-solid fa-trash-can"></i>
+      </button>
+    `;
+
+    card.innerHTML = `
+      <div class="pengajuan-card-head">
+        <div class="pengajuan-badges">
+          ${statusBadge}
+          ${renderBadge(p.untuk)}
+        </div>
+        <span class="pengajuan-tgl"><i class="fa-regular fa-clock"></i> Diajukan: ${tglPengajuan} WIB</span>
+      </div>
+
+      <div class="pengusul-banner">
+        <div class="pengusul-avatar"><i class="fa-solid fa-user"></i></div>
+        <div class="pengusul-meta">
+          <div class="pengusul-name">${esc(p.nama_pengusul)}</div>
+          <a class="pengusul-email" href="mailto:${esc(p.email_pengusul)}" title="Kirim email manual"><i class="fa-regular fa-envelope"></i> ${esc(p.email_pengusul)}</a>
+        </div>
+      </div>
+
+      <div class="pengajuan-kajian-body">
+        <h3 class="pengajuan-title">${esc(p.judul)}</h3>
+        <div class="pengajuan-meta-list">
+          ${p.ustadz ? `<div class="meta"><i class="fa-solid fa-user-tie"></i> <strong>${esc(p.ustadz)}</strong></div>` : ""}
+          <div class="meta"><i class="fa-regular fa-calendar-check"></i> ${waktuKajian}</div>
+          <div class="meta"><i class="fa-solid fa-location-dot"></i> ${lokasi}</div>
+        </div>
+
+        ${p.catatan ? `
+          <div class="pengusul-catatan">
+            <strong><i class="fa-solid fa-comment-dots"></i> Catatan Pengusul:</strong>
+            <p>${esc(p.catatan)}</p>
+          </div>
+        ` : ""}
+
+        ${p.alasan_tolak ? `
+          <div class="pengusul-catatan alasan-tolak">
+            <strong><i class="fa-solid fa-triangle-exclamation"></i> Alasan Penolakan:</strong>
+            <p>${esc(p.alasan_tolak)}</p>
+          </div>
+        ` : ""}
+      </div>
+
+      <div class="pengajuan-actions">
+        ${actionButtons}
+      </div>
+    `;
+
+    grid.appendChild(card);
+  });
+
+  // Attach button events
+  grid.querySelectorAll(".btn-approve").forEach((b) => {
+    b.addEventListener("click", () => {
+      const id = b.dataset.id;
+      const item = pengajuanDataList.find((p) => String(p.ID || p.id) === String(id));
+      if (item) bukaModalApprove(item);
+    });
+  });
+
+  grid.querySelectorAll(".btn-reject").forEach((b) => {
+    b.addEventListener("click", () => {
+      const id = b.dataset.id;
+      const item = pengajuanDataList.find((p) => String(p.ID || p.id) === String(id));
+      if (item) bukaModalReject(item);
+    });
+  });
+
+  grid.querySelectorAll(".btn-hapus-pengajuan").forEach((b) => {
+    b.addEventListener("click", () => {
+      const id = b.dataset.id;
+      konfirmasiHapusPengajuan(id);
+    });
+  });
+}
+
+// Filter chips & stat cards pengajuan
+document.querySelectorAll(".stat-card[data-p-stat]").forEach((card) => {
+  card.addEventListener("click", () => {
+    document.querySelectorAll(".stat-card[data-p-stat]").forEach((c) => c.classList.remove("active"));
+    card.classList.add("active");
+    pStatusActive = card.dataset.pStat;
+    // Sync chip
+    document.querySelectorAll("button[data-p-waktu]").forEach((chip) => {
+      chip.classList.toggle("active", chip.dataset.pWaktu === pStatusActive);
+    });
+    loadPengajuanList();
+  });
+});
+
+document.querySelectorAll("button[data-p-waktu]").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    document.querySelectorAll("button[data-p-waktu]").forEach((c) => c.classList.remove("active"));
+    chip.classList.add("active");
+    pStatusActive = chip.dataset.pWaktu;
+    // Sync stat card
+    document.querySelectorAll(".stat-card[data-p-stat]").forEach((card) => {
+      card.classList.toggle("active", card.dataset.pStat === pStatusActive);
+    });
+    loadPengajuanList();
+  });
+});
+
+/* ================= Modal Approve Pengajuan ================= */
+function bukaModalApprove(item) {
+  targetPengajuan = item;
+  const detailBox = $("approve-detail-box");
+  if (detailBox) {
+    const waktuKajian = item.waktu_mulai ? formatTanggal(item.waktu_mulai) : "-";
+    detailBox.innerHTML = `
+      <div style="font-weight:700;font-size:0.95rem;margin-bottom:6px;color:var(--text);">${esc(item.judul)}</div>
+      <div style="color:var(--text-muted);margin-bottom:4px;"><i class="fa-solid fa-user-tie"></i> ${esc(item.ustadz || "-")}</div>
+      <div style="color:var(--text-muted);margin-bottom:4px;"><i class="fa-regular fa-clock"></i> ${waktuKajian}</div>
+      <div style="color:var(--text-muted);margin-bottom:6px;"><i class="fa-solid fa-location-dot"></i> ${esc(item.tempat || "-")}, ${esc(item.kota || "-")}</div>
+      <div style="font-size:0.8rem;color:var(--primary);border-top:1px dashed var(--border);padding-top:6px;margin-top:6px;">
+        <i class="fa-regular fa-paper-plane"></i> Email konfirmasi akan dikirim ke: <strong>${esc(item.email_pengusul)}</strong>
+      </div>
+    `;
+  }
+  $("modal-approve-pengajuan").classList.remove("hidden");
+}
+
+function tutupModalApprove() {
+  $("modal-approve-pengajuan").classList.add("hidden");
+  targetPengajuan = null;
+}
+
+const btnBatalApprove = $("btn-batal-approve");
+if (btnBatalApprove) btnBatalApprove.addEventListener("click", tutupModalApprove);
+
+const btnKonfirmasiApprove = $("btn-konfirmasi-approve");
+if (btnKonfirmasiApprove) {
+  btnKonfirmasiApprove.addEventListener("click", async () => {
+    if (!targetPengajuan) return;
+    const id = targetPengajuan.ID || targetPengajuan.id;
+    btnKonfirmasiApprove.disabled = true;
+    btnKonfirmasiApprove.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memproses...`;
+
+    try {
+      const res = await fetch(`${API_BASE}/admin/pengajuan/${id}/approve`, {
+        method: "POST",
+        headers: authHeaders(),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.message || "Gagal menyetujui usulan");
+
+      tutupModalApprove();
+      showToast("Usulan berhasil disetujui, jadwal diterbitkan, & email notifikasi terkirim!");
+      loadPengajuanList();
+      loadList(); // Refresh jadwal juga
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      btnKonfirmasiApprove.disabled = false;
+      btnKonfirmasiApprove.innerHTML = `<i class="fa-solid fa-check"></i> Ya, Setujui & Terbitkan`;
+    }
+  });
+}
+
+/* ================= Modal Reject Pengajuan ================= */
+function bukaModalReject(item) {
+  targetPengajuan = item;
+  $("reject-alasan-input").value = "";
+  $("modal-reject-pengajuan").classList.remove("hidden");
+}
+
+function tutupModalReject() {
+  $("modal-reject-pengajuan").classList.add("hidden");
+  targetPengajuan = null;
+}
+
+const btnBatalReject = $("btn-batal-reject");
+if (btnBatalReject) btnBatalReject.addEventListener("click", tutupModalReject);
+
+const btnCloseReject = $("btn-close-reject");
+if (btnCloseReject) btnCloseReject.addEventListener("click", tutupModalReject);
+
+const btnKonfirmasiReject = $("btn-konfirmasi-reject");
+if (btnKonfirmasiReject) {
+  btnKonfirmasiReject.addEventListener("click", async () => {
+    if (!targetPengajuan) return;
+    const id = targetPengajuan.ID || targetPengajuan.id;
+    const alasan = $("reject-alasan-input").value.trim();
+
+    btnKonfirmasiReject.disabled = true;
+    btnKonfirmasiReject.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim...`;
+
+    try {
+      const res = await fetch(`${API_BASE}/admin/pengajuan/${id}/reject`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ alasan_tolak: alasan }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.message || "Gagal menolak usulan");
+
+      tutupModalReject();
+      showToast("Usulan kajian ditolak & email pemberitahuan telah dikirimkan ke pengusul.");
+      loadPengajuanList();
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      btnKonfirmasiReject.disabled = false;
+      btnKonfirmasiReject.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Kirim Penolakan`;
+    }
+  });
+}
+
+// Konfirmasi hapus arsip pengajuan
+async function konfirmasiHapusPengajuan(id) {
+  if (!confirm("Hapus data usulan ini secara permanen dari database?")) return;
+  try {
+    const res = await fetch(`${API_BASE}/admin/pengajuan/${id}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message || "Gagal menghapus");
+
+    showToast("Data usulan berhasil dihapus.");
+    loadPengajuanList();
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+}
 
 /* ================= Init ================= */
 if (getToken() && localStorage.getItem("admin_role") === "admin") {

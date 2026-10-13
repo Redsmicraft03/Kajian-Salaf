@@ -18,11 +18,17 @@ func registerRoutes(router fiber.Router) {
 	admin.Get("/kajian", handler.GetKajian)
 	admin.Put("/kajian/:id", handler.UpdateKajian)
 	admin.Delete("/kajian/:id", handler.DeleteKajian)
+	admin.Get("/pengajuan", handler.GetAdminPengajuan)
+	admin.Post("/pengajuan/:id/approve", handler.ApprovePengajuan)
+	admin.Post("/pengajuan/:id/reject", handler.RejectPengajuan)
+	admin.Delete("/pengajuan/:id", handler.DeletePengajuan)
 
 	router.Get("/kajian", handler.GetKajian)
 	router.Get("/kajian/:id", handler.GetKajianByID)
 	router.Get("/lokasi", handler.GetLokasi)
+	router.Get("/master-wilayah", handler.GetMasterWilayah)
 	router.Get("/template-excel", handler.DownloadTemplateExcel)
+	router.Post("/pengajuan", handler.CreatePengajuan)
 }
 
 func InitRoutes(app *fiber.App) {

@@ -510,6 +510,187 @@ $("next").addEventListener("click", () => {
   }
 });
 
+/* ================= Toast Notification ================= */
+function showToast(pesan) {
+  const toast = $("toast");
+  const text = $("toast-text");
+  if (!toast) return;
+  if (text) text.textContent = pesan;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 3600);
+}
+
+/* ================= Modal Ajukan Kajian (User Submission) ================= */
+let masterWilayahPublic = [];
+
+async function loadMasterWilayahPublic() {
+  if (masterWilayahPublic.length > 0) return;
+  try {
+    const res = await fetch(`${API_BASE}/master-wilayah`);
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data)) {
+      masterWilayahPublic = json.data;
+      renderAjukanProvinsi();
+    }
+  } catch (e) {
+    console.error("Gagal memuat master wilayah:", e);
+  }
+}
+
+function renderAjukanProvinsi() {
+  const provEl = $("ajukan-provinsi");
+  if (!provEl) return;
+  provEl.innerHTML = `<option value="">-- Pilih Provinsi --</option>`;
+  masterWilayahPublic.forEach((p) => {
+    const opt = document.createElement("option");
+    opt.value = p.nama;
+    opt.textContent = p.nama;
+    provEl.appendChild(opt);
+  });
+}
+
+function populateAjukanKota(provinsiNama) {
+  const kotaEl = $("ajukan-kota");
+  if (!kotaEl) return;
+  kotaEl.innerHTML = "";
+
+  if (!provinsiNama) {
+    kotaEl.innerHTML = `<option value="">-- Pilih Provinsi Terlebih Dahulu --</option>`;
+    return;
+  }
+
+  const prov = masterWilayahPublic.find((p) => p.nama.toLowerCase() === provinsiNama.toLowerCase());
+  kotaEl.innerHTML = `<option value="">-- Pilih Kota / Kabupaten --</option>`;
+
+  if (prov && Array.isArray(prov.kota)) {
+    prov.kota.forEach((k) => {
+      const opt = document.createElement("option");
+      opt.value = k;
+      opt.textContent = k;
+      kotaEl.appendChild(opt);
+    });
+  }
+}
+
+const ajukanProvSelect = $("ajukan-provinsi");
+if (ajukanProvSelect) {
+  ajukanProvSelect.addEventListener("change", () => {
+    populateAjukanKota(ajukanProvSelect.value);
+  });
+}
+
+async function bukaModalAjukan() {
+  const modal = $("modal-ajukan");
+  if (!modal) return;
+
+  $("form-ajukan").reset();
+  $("ajukan-err").classList.add("hidden");
+
+  // Set default tgl & jam
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  $("ajukan-tanggal").value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  $("ajukan-jam").value = "18:30";
+
+  await loadMasterWilayahPublic();
+  populateAjukanKota("");
+
+  modal.classList.remove("hidden");
+  setTimeout(() => $("ajukan-nama").focus(), 80);
+}
+
+function tutupModalAjukan() {
+  const modal = $("modal-ajukan");
+  if (modal) modal.classList.add("hidden");
+}
+
+const btnNavAjukan = $("btn-ajukan-kajian");
+if (btnNavAjukan) btnNavAjukan.addEventListener("click", bukaModalAjukan);
+
+const btnHeroAjukan = $("btn-hero-ajukan");
+if (btnHeroAjukan) btnHeroAjukan.addEventListener("click", bukaModalAjukan);
+
+const btnTutupAjukan = $("modal-ajukan-tutup");
+if (btnTutupAjukan) btnTutupAjukan.addEventListener("click", tutupModalAjukan);
+
+const btnBatalAjukan = $("btn-ajukan-batal");
+if (btnBatalAjukan) btnBatalAjukan.addEventListener("click", tutupModalAjukan);
+
+const modalAjukan = $("modal-ajukan");
+if (modalAjukan) {
+  modalAjukan.addEventListener("click", (e) => {
+    if (e.target === modalAjukan) tutupModalAjukan();
+  });
+}
+
+const formAjukan = $("form-ajukan");
+if (formAjukan) {
+  formAjukan.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const errBox = $("ajukan-err");
+    const errText = $("ajukan-err-text");
+    errBox.classList.add("hidden");
+
+    const tgl = $("ajukan-tanggal").value;
+    const jam = $("ajukan-jam").value;
+    if (!tgl || !jam) {
+      errText.textContent = "Tanggal dan jam kajian wajib diisi.";
+      errBox.classList.remove("hidden");
+      return;
+    }
+
+    const pad = (n) => String(n).padStart(2, "0");
+    const localDate = new Date(`${tgl}T${jam}:00`);
+    const offset = -localDate.getTimezoneOffset();
+    const sign = offset >= 0 ? "+" : "-";
+    const absOffset = Math.abs(offset);
+    const rfc3339 = `${tgl}T${jam}:00${sign}${pad(Math.floor(absOffset / 60))}:${pad(absOffset % 60)}`;
+
+    const payload = {
+      nama_pengusul: $("ajukan-nama").value.trim(),
+      email_pengusul: $("ajukan-email").value.trim(),
+      catatan: $("ajukan-catatan").value.trim(),
+      judul: $("ajukan-judul").value.trim(),
+      ustadz: $("ajukan-ustadz").value.trim(),
+      waktu_mulai: rfc3339,
+      provinsi: $("ajukan-provinsi").value.trim(),
+      kota: $("ajukan-kota").value.trim(),
+      tempat: $("ajukan-tempat").value.trim(),
+      map_url: $("ajukan-map").value.trim(),
+      poster_url: $("ajukan-poster").value.trim(),
+      live_url: $("ajukan-live").value.trim(),
+      untuk: $("ajukan-untuk").value,
+    };
+
+    const submitBtn = $("btn-ajukan-submit");
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirimkan...`;
+
+    try {
+      const res = await fetch(`${API_BASE}/pengajuan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json();
+      if (!json.success) {
+        throw new Error(json.message || "Gagal mengirimkan usulan kajian.");
+      }
+
+      tutupModalAjukan();
+      showToast("Jazakallahu khairan! Usulan jadwal berhasil dikirim dan akan segera ditinjau oleh Admin.");
+    } catch (err) {
+      errText.textContent = err.message;
+      errBox.classList.remove("hidden");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Kirim Usulan Kajian`;
+    }
+  });
+}
+
 /* ---------- init ---------- */
 refreshKotaLabel();
 fetchLokasi();
