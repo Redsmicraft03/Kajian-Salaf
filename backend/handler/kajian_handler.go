@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -270,6 +271,17 @@ func parseWaktuExcel(tglStr, jamStr string) (time.Time, error) {
 	tglStr = strings.TrimSpace(tglStr)
 	jamStr = strings.TrimSpace(jamStr)
 
+	// Selalu gunakan zona waktu Indonesia Barat (WIB / UTC+7) agar tidak terpengaruh jam server UTC
+	locWIB := time.FixedZone("WIB", 7*3600)
+
+	// Jika kolom jam berupa angka desimal serial Excel (contoh: 0.760416 -> 18:15)
+	if fVal, err := strconv.ParseFloat(jamStr, 64); err == nil && fVal >= 0 && fVal < 1 {
+		totalSecs := int(math.Round(fVal * 86400))
+		h := totalSecs / 3600
+		m := (totalSecs % 3600) / 60
+		jamStr = fmt.Sprintf("%02d:%02d", h, m)
+	}
+
 	// Jika jam kosong, default ke 00:00
 	if jamStr == "" {
 		jamStr = "00:00"
@@ -278,17 +290,28 @@ func parseWaktuExcel(tglStr, jamStr string) (time.Time, error) {
 	// Normalisasi titik ke titik dua pada jam, misal 18.30 -> 18:30
 	jamStr = strings.ReplaceAll(jamStr, ".", ":")
 
+	// Jika kolom tanggal berupa serial number Excel (contoh: 46307)
+	if fVal, err := strconv.ParseFloat(tglStr, 64); err == nil && fVal > 10000 {
+		if tExcel, err := excelize.ExcelDateToTime(fVal, false); err == nil {
+			tglStr = tExcel.Format("2006-01-02")
+		}
+	}
+
 	// 1. Coba parse jika tglStr sudah memuat tanggal & jam sekaligus
 	formatsFull := []string{
 		"2006-01-02 15:04:05",
 		"2006-01-02 15:04",
 		"2006-01-02T15:04:05",
 		"2006-01-02T15:04:05Z07:00",
+		"2006-01-02 03:04 PM",
+		"2006-01-02 3:04 PM",
 		"02/01/2006 15:04",
+		"02/01/2006 15:04:05",
 		"02-01-2006 15:04",
+		"02-01-2006 15:04:05",
 	}
 	for _, f := range formatsFull {
-		if t, err := time.ParseInLocation(f, tglStr, time.Local); err == nil {
+		if t, err := time.ParseInLocation(f, tglStr, locWIB); err == nil {
 			return t, nil
 		}
 	}
@@ -298,20 +321,26 @@ func parseWaktuExcel(tglStr, jamStr string) (time.Time, error) {
 	formats := []string{
 		"2006-01-02 15:04",
 		"2006-01-02 15:04:05",
+		"2006-01-02 03:04 PM",
+		"2006-01-02 3:04 PM",
+		"2006/01/02 15:04",
 		"02/01/2006 15:04",
 		"02/01/2006 15:04:05",
+		"02/01/2006 03:04 PM",
+		"02/01/2006 3:04 PM",
 		"02-01-2006 15:04",
 		"02-01-2006 15:04:05",
 		"2/1/2006 15:04",
 		"2-1-2006 15:04",
+		"2006-1-2 15:04",
 	}
 	for _, f := range formats {
-		if t, err := time.ParseInLocation(f, combined, time.Local); err == nil {
+		if t, err := time.ParseInLocation(f, combined, locWIB); err == nil {
 			return t, nil
 		}
 	}
 
-	return time.Time{}, errors.New("format tanggal atau jam tidak dikenali (gunakan format YYYY-MM-DD dan HH:MM)")
+	return time.Time{}, errors.New("format tanggal atau jam tidak dikenali (gunakan format YYYY-MM-DD dan HH:MM 24 jam)")
 }
 
 // BulkCreateKajian mengimpor banyak data kajian sekaligus dari file Excel (.xlsx) atau CSV
