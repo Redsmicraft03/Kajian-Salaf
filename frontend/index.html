@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="css/style.css?v=8">
+  <link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body>
 
@@ -252,14 +252,18 @@
       <div class="form-section-divider full">
         <i class="fa-solid fa-user"></i> Data Pengusul
       </div>
+      <div class="form-section-note full">
+        <i class="fa-solid fa-circle-info"></i>
+        <span>Masukkan nama dan email Anda. Sistem akan mengirimkan notifikasi status usulan (disetujui/ditolak) langsung ke email ini.</span>
+      </div>
 
       <label>
-        <span>Nama Anda *</span>
+        <span class="field-title">Nama Lengkap <span class="req-star">*</span></span>
         <input type="text" id="ajukan-nama" placeholder="cth: Abdullah / Fulan" required>
       </label>
 
       <label>
-        <span>Email Anda (untuk notifikasi status) *</span>
+        <span class="field-title">Alamat Email <span class="req-star">*</span></span>
         <input type="email" id="ajukan-email" placeholder="nama@email.com" required>
       </label>
 
@@ -269,56 +273,56 @@
       </div>
 
       <label class="full">
-        <span>Judul / Tema Kajian *</span>
+        <span class="field-title">Judul / Tema Kajian <span class="req-star">*</span></span>
         <input type="text" id="ajukan-judul" placeholder="cth: Pembahasan Kitab Tauhid Bab 1" required>
       </label>
 
       <label class="full">
-        <span>Pemateri / Ustadz *</span>
+        <span class="field-title">Pemateri / Ustadz <span class="req-star">*</span></span>
         <input type="text" id="ajukan-ustadz" placeholder="cth: Ustadz Dr. Firanda Andirja, M.A." required>
       </label>
 
       <label>
-        <span>Tanggal Kajian *</span>
+        <span class="field-title">Tanggal Kajian <span class="req-star">*</span></span>
         <input type="date" id="ajukan-tanggal" required>
       </label>
 
       <label>
-        <span>Waktu / Jam Mulai *</span>
+        <span class="field-title">Waktu / Jam Mulai <span class="req-star">*</span></span>
         <input type="time" id="ajukan-jam" value="18:30" required>
       </label>
 
       <label>
-        <span>Provinsi *</span>
+        <span class="field-title">Provinsi <span class="req-star">*</span></span>
         <select id="ajukan-provinsi" required>
           <option value="">-- Pilih Provinsi --</option>
         </select>
       </label>
 
       <label>
-        <span>Kota / Kabupaten *</span>
+        <span class="field-title">Kota / Kabupaten <span class="req-star">*</span></span>
         <select id="ajukan-kota" required>
           <option value="">-- Pilih Provinsi Terlebih Dahulu --</option>
         </select>
       </label>
 
       <label class="full">
-        <span>Nama Tempat / Masjid *</span>
+        <span class="field-title">Nama Tempat / Masjid <span class="req-star">*</span></span>
         <input type="text" id="ajukan-tempat" placeholder="cth: Masjid Nurul Iman, Blok M Square Lt. 7" required>
       </label>
 
       <label class="full">
-        <span>Link Google Maps (Opsional)</span>
+        <span class="field-title">Link Google Maps (Opsional)</span>
         <input type="url" id="ajukan-map" placeholder="https://maps.google.com/?q=...">
       </label>
 
       <label class="full">
-        <span>Link Gambar Poster (Opsional)</span>
+        <span class="field-title">Link Gambar Poster (Opsional)</span>
         <input type="url" id="ajukan-poster" placeholder="https://i.postimg.cc/... / https://...">
       </label>
 
       <label>
-        <span>Sasaran Jamaah</span>
+        <span class="field-title">Sasaran Jamaah</span>
         <select id="ajukan-untuk">
           <option value="umum">Umum (Ikhwan & Akhwat)</option>
           <option value="ikhwan">Khusus Ikhwan</option>
@@ -327,12 +331,12 @@
       </label>
 
       <label>
-        <span>Link Live Streaming (Opsional)</span>
+        <span class="field-title">Link Live Streaming (Opsional)</span>
         <input type="url" id="ajukan-live" placeholder="https://youtube.com/live/...">
       </label>
 
       <label class="full">
-        <span>Catatan Tambahan untuk Admin (Opsional)</span>
+        <span class="field-title">Catatan Tambahan untuk Admin (Opsional)</span>
         <textarea id="ajukan-catatan" rows="2" placeholder="cth: Info valid dari pengurus masjid, diadakan rutin tiap sabtu malam..."></textarea>
       </label>
 
